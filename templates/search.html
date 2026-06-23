@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Search Results - StreamFlix{% endblock %}
+{% block content %}
+<section class="page-hero page-hero-sm">
+    <div class="page-hero-copy">
+        <span class="eyebrow">Search</span>
+        <h1>Results for "{{ query }}"</h1>
+        <p>Found {{ movies|length }} movies matching your search.</p>
+    </div>
+</section>
+
+<section class="section section-glass">
+    {% if movies %}
+    <div class="movies-grid">
+        {% for movie in movies %}
+        <article class="movie-card vertical-card">
+            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ movie.thumbnail }}" alt="{{ movie.title }}">
+                    <div class="movie-card-hover"><span>▶</span></div>
+                </div>
+            </a>
+            <div class="movie-card-info">
+                <h3>{{ movie.title }}</h3>
+                <p>{{ movie.rating }}/10 • {{ category_map[movie.category_id] if movie.category_id in category_map else 'Movie' }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>No results found</h2>
+        <p>Try searching with different keywords or browse our collection.</p>
+        <a href="{{ url_for('movies_page') }}" class="btn btn-primary">Browse All Movies</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+                    <div class="movie-overlay">
+                        {% if session.user.subscription_status == 'approved' %}
+                        <a href="{{ url_for('watch', movie_id=movie.id) }}" class="play-btn">Play</a>
+                        {% else %}
+                        <div class="subscribe-overlay">
+                            <p>Subscribe to watch this content</p>
+                            <a href="{{ url_for('subscription') }}" class="btn-secondary">Subscribe</a>
+                        </div>
+                        {% endif %}
+                        <a href="{{ url_for('add_to_watchlist', movie_id=movie.id) }}" class="watchlist-btn">Add to List</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+

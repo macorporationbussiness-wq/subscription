@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Categories{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-primary {
+        padding: 0.8rem 1.5rem;
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(229, 9, 20, 0.4);
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .category-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        animation: fadeInCard 0.5s ease forwards;
+    }
+
+    @keyframes fadeInCard {
+        to {
+            opacity: 1;
+        }
+    }
+
+    .category-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(229, 9, 20, 0.4);
+        transform: translateY(-8px);
+        box-shadow: 0 16px 40px rgba(229, 9, 20, 0.2);
+    }
+
+    .category-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .category-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.2), rgba(255, 56, 88, 0.2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+
+    .category-info h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #fff;
+    }
+
+    .category-info p {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .category-stats {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        font-size: 0.9rem;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .stat-value {
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .category-actions {
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.7rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+    }
+
+    .action-btn-primary {
+        background: linear-gradient(135deg, #2196f3, #42a5f5);
+        color: #fff;
+    }
+
+    .action-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+    }
+
+    .action-btn-danger {
+        background: linear-gradient(135deg, #f44336, #ff5252);
+        color: #fff;
+    }
+
+    .action-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th {
+        background: rgba(229, 9, 20, 0.1);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 700;
+        color: #fff;
+        border-bottom: 2px solid rgba(229, 9, 20, 0.3);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .table td {
+        padding: 1.2rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .table tbody tr:hover {
+        background: rgba(229, 9, 20, 0.08);
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-container {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        margin-top: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(229, 9, 20, 0.5);
+        box-shadow: 0 0 15px rgba(229, 9, 20, 0.2);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-submit {
+        padding: 0.8rem 1.5rem;
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>📁 Category Management</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Organize your content with categories</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="toggleForm()">+ Add Category</button>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}" class="active">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}">💳 Payments</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <!-- Add Category Form -->
+    <div class="form-container" id="addCategoryForm" style="display: none;">
+        <h2>Add New Category</h2>
+        <form method="POST" action="{{ url_for('add_category') }}">
+            <div class="form-group">
+                <label for="name">Category Name</label>
+                <input type="text" id="name" name="name" required placeholder="e.g., Action, Drama, Comedy">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3" placeholder="Describe this category..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">✓ Create Category</button>
+                <button type="button" class="btn-submit" style="background: linear-gradient(135deg, #666, #888);" onclick="toggleForm()">✕ Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Categories Grid -->
+    {% if categories %}
+    <div class="category-grid">
+        {% for category in categories %}
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🎭</div>
+                <div class="category-info">
+                    <h3>{{ category.name }}</h3>
+                    <p>{{ category.movie_count or 0 }} movies</p>
+                </div>
+            </div>
+            <div class="category-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Category ID:</span>
+                    <span class="stat-value">#{{ category.id }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Created:</span>
+                    <span class="stat-value">{{ category.created_at.strftime('%b %d') if category.created_at else 'N/A' }}</span>
+                </div>
+            </div>
+            <div class="category-actions">
+                <a href="{{ url_for('edit_category', category_id=category.id) }}" class="action-btn action-btn-primary">✏️ Edit</a>
+                <a href="{{ url_for('delete_category', category_id=category.id) }}" class="action-btn action-btn-danger" onclick="return confirm('Are you sure?')">🗑️ Delete</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="table-container">
+        <div class="empty-message">
+            <h3>📂 No Categories Found</h3>
+            <p>Create your first category to organize your content</p>
+            <button class="btn-primary" onclick="toggleForm()" style="margin-top: 1rem;">+ Add Category</button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleForm() {
+        const form = document.getElementById('addCategoryForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+
+{% endblock %}
+

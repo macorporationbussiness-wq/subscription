@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Payments{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        opacity: 0;
+        animation: fadeInTable 0.5s ease forwards 0.2s;
+    }
+
+    @keyframes fadeInTable {
+        to {
+            opacity: 1;
+        }
+    }
+
+    .table th {
+        background: rgba(229, 9, 20, 0.1);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 700;
+        color: #fff;
+        border-bottom: 2px solid rgba(229, 9, 20, 0.3);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .table td {
+        padding: 1.2rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+    }
+
+    .table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(229, 9, 20, 0.08);
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 0.9rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-pending {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .badge-approved {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4caf50;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .badge-rejected {
+        background: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+        border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+
+    .actions {
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    .action-btn {
+        padding: 0.6rem 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .action-btn-success {
+        background: linear-gradient(135deg, #4caf50, #66bb6a);
+        color: #fff;
+    }
+
+    .action-btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    .action-btn-danger {
+        background: linear-gradient(135deg, #f44336, #ff5252);
+        color: #fff;
+    }
+
+    .action-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>💳 Payment Management</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Review and manage subscription payments</p>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}" class="active">💳 Payments</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="table-container">
+        {% if payments %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Screenshot</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td><strong>{{ payment.user_name }}</strong></td>
+                    <td>{{ payment.user_email }}</td>
+                    <td><span class="badge" style="background: rgba(33, 150, 243, 0.15); color: #2196f3; border: 1px solid rgba(33, 150, 243, 0.3);">{{ payment.plan.upper() }}</span></td>
+                    <td><strong>{{ payment.amount or '₹0' }}</strong></td>
+                    <td><span class="badge badge-{{ payment.status.lower() }}">{{ payment.status.upper() }}</span></td>
+                    <td>{{ payment.created_at.strftime('%d %b, %Y') if payment.created_at else 'N/A' }}</td>
+                    <td>
+                        {% if payment.screenshot %}
+                        <button class="action-btn action-btn-secondary" onclick="viewScreenshot('{{ url_for('serve_upload', filename=payment.screenshot) }}')">
+                            👁️ View
+                        </button>
+                        {% else %}
+                        <span style="color: rgba(255,255,255,0.4);">No screenshot</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="actions">
+                            {% if payment.status == 'pending' %}
+                            <a href="{{ url_for('admin_approve_payment', payment_id=payment.id) }}" class="action-btn action-btn-success">✓ Approve</a>
+                            <a href="{{ url_for('admin_reject_payment', payment_id=payment.id) }}" class="action-btn action-btn-danger">✗ Reject</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-message">
+            <h3>No Payments Found</h3>
+            <p>All payment requests have been processed</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Fullscreen Screenshot Modal -->
+<div id="screenshotModal" class="modal">
+    <div class="modal-content fullscreen">
+        <div class="modal-header">
+            <h2>Payment Screenshot</h2>
+            <span class="close" onclick="closeScreenshotModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <img id="screenshotImage" src="" alt="Payment Screenshot" style="max-width: 100%; max-height: 80vh; object-fit: contain;">
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.modal-content.fullscreen {
+    background: #000;
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 95%;
+    max-width: 1200px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.close {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #fff;
+}
+
+.modal-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.action-btn-secondary {
+    background: linear-gradient(135deg, #666, #999);
+    color: #fff;
+}
+
+.action-btn-secondary:hover {
+    background: linear-gradient(135deg, #999, #ccc);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 102, 102, 0.3);
+}
+</style>
+
+<script>
+function viewScreenshot(imageUrl) {
+    document.getElementById('screenshotImage').src = imageUrl;
+    document.getElementById('screenshotModal').style.display = 'block';
+}
+
+function closeScreenshotModal() {
+    document.getElementById('screenshotModal').style.display = 'none';
+    document.getElementById('screenshotImage').src = '';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('screenshotModal');
+    if (event.target == modal) {
+        closeScreenshotModal();
+    }
+}
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeScreenshotModal();
+    }
+});
+</script>
+
+{% endblock %}
+

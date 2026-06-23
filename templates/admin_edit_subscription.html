@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - {{ 'Edit' if plan else 'Add' }} Subscription Plan{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .checkbox-group label {
+        margin: 0;
+        font-weight: normal;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .help-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .feature-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .feature-tag {
+        background: rgba(229, 9, 20, 0.2);
+        color: #e50914;
+        padding: 0.25rem 0.75rem;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .feature-tag:before {
+        content: "✓";
+    }
+
+    @media (max-width: 768px) {
+        .admin-section {
+            padding: 1rem;
+        }
+
+        .form-card {
+            padding: 2rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<section class="admin-section">
+    <div class="section-header">
+        <h1>{{ 'Edit' if plan else 'Add' }} Subscription Plan</h1>
+        <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">
+            {{ 'Update plan details and pricing' if plan else 'Create a new subscription plan for users' }}
+        </p>
+    </div>
+
+    <div class="form-card">
+        <form method="POST">
+            <div class="form-group">
+                <label for="name">Plan Name *</label>
+                <input type="text" id="name" name="name" value="{{ plan.name if plan else '' }}" required placeholder="e.g., Premium Monthly">
+                <div class="help-text">Choose a descriptive name for the subscription plan</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="duration_unit">Duration Type *</label>
+                    <select id="duration_unit" name="duration_unit" required onchange="handleDurationUnitChange()">
+                        <option value="month" {{ 'selected' if plan and plan.duration_unit == 'month' else '' }}>Months</option>
+                        <option value="day" {{ 'selected' if plan and plan.duration_unit == 'day' else '' }}>Days</option>
+                        <option value="year" {{ 'selected' if plan and plan.duration_unit == 'year' else '' }}>Years</option>
+                        <option value="lifetime" {{ 'selected' if plan and plan.duration_unit == 'lifetime' else '' }}>Lifetime</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="duration_value_group">
+                    <label for="duration_value">Duration Value *</label>
+                    <input type="number" id="duration_value" name="duration_value" value="{{ plan.duration_value if plan else 1 }}" required min="0" step="1" placeholder="1">
+                    <div class="help-text">Enter duration in the selected unit. Use 0 or leave blank for lifetime plans.</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price_pkr">Price (PKR) *</label>
+                    <input type="number" id="price_pkr" name="price_pkr" value="{{ plan.price_pkr if plan else '' }}" required min="1" step="0.01" placeholder="500">
+                    <div class="help-text">Price in Pakistani Rupees</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="discount_percentage">Discount Percentage</label>
+                <input type="number" id="discount_percentage" name="discount_percentage" value="{{ plan.discount_percentage if plan else 0 }}" min="0" max="100" step="0.1" placeholder="25">
+                <div class="help-text">Optional discount percentage (0-100). Leave 0 for no discount.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="max_users">Maximum Users *</label>
+                <input type="number" id="max_users" name="max_users" value="{{ plan.max_users if plan else 1 }}" required min="1" max="10" placeholder="1">
+                <div class="help-text">Maximum number of users who can share this subscription (1-10)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="features">Features *</label>
+                <textarea id="features" name="features" required placeholder="HD Streaming, 1 Device, Ad-free">{{ plan.features if plan else 'HD Streaming, 1 Device, Ad-free' }}</textarea>
+                <div class="help-text">List features separated by commas. These will be displayed to users.</div>
+                {% if plan %}
+                <div class="feature-tags">
+                    {% for feature in plan.features.split(',') %}
+                    <span class="feature-tag">{{ feature.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="is_active" name="is_active" {{ 'checked' if not plan or plan.is_active else '' }}>
+                    <label for="is_active">Active Plan</label>
+                </div>
+                <div class="help-text">Only active plans are visible to users for subscription</div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('admin_subscriptions') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    {{ 'Update Plan' if plan else 'Create Plan' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+    function handleDurationUnitChange() {
+        const unit = document.getElementById('duration_unit').value;
+        const valueGroup = document.getElementById('duration_value_group');
+        const valueInput = document.getElementById('duration_value');
+        if (unit === 'lifetime') {
+            valueInput.value = 0;
+            valueInput.setAttribute('disabled', 'disabled');
+            valueGroup.style.display = 'none';
+        } else {
+            valueInput.removeAttribute('disabled');
+            valueGroup.style.display = 'block';
+            if (!valueInput.value || parseInt(valueInput.value, 10) === 0) {
+                valueInput.value = 1;
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', handleDurationUnitChange);
+</script>
+
+<script>
+// Auto-update feature tags preview
+document.getElementById('features').addEventListener('input', function() {
+    const features = this.value.split(',').map(f => f.trim()).filter(f => f);
+    const tagsContainer = this.parentElement.querySelector('.feature-tags') || document.createElement('div');
+    tagsContainer.className = 'feature-tags';
+    tagsContainer.innerHTML = features.map(feature =>
+        `<span class="feature-tag">${feature}</span>`
+    ).join('');
+    if (!this.parentElement.querySelector('.feature-tags')) {
+        this.parentElement.appendChild(tagsContainer);
+    }
+});
+</script>
+{% endblock %}
+

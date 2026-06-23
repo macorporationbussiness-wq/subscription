@@ -1,0 +1,888 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Subscription Plans - StreamFlix{% endblock %}
+{% block content %}
+<section class="hero-fullscreen">
+    <div class="hero-bg" style="background-image: url('https://image.tmdb.org/t/p/original/ww7hJHwjY9icW7MSZz2dnQ88wD1.jpg');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="eyebrow">Premium plans</span>
+        <div class="hero-headline">
+            <h1>Choose the perfect plan for unlimited streaming.</h1>
+            <p>Access thousands of movies and shows in stunning quality with flexible plans designed for every viewer.</p>
+        </div>
+        <div class="hero-status-cards">
+            <div class="hero-stat">
+                <span>4K</span>
+                <p>Ultra HD</p>
+            </div>
+            <div class="hero-stat">
+                <span>Ad-free</span>
+                <p>Premium</p>
+            </div>
+            <div class="hero-stat">
+                <span>Cancel</span>
+                <p>Anytime</p>
+            </div>
+        </div>
+        <div class="hero-actions">
+            {% if user and user.subscription_status != 'approved' %}
+                <a href="{{ url_for('join_family') }}" class="btn btn-primary">👨‍👩‍👧‍👦 Join Family</a>
+                <a href="#plans" class="btn btn-secondary">View Plans</a>
+            {% else %}
+                <a href="#plans" class="btn btn-primary">View Plans</a>
+                <a href="{{ url_for('about') }}" class="btn btn-secondary">Learn More</a>
+            {% endif %}
+        </div>
+
+        {% if current_plan %}
+        <div class="hero-plan-summary" style="margin-top: 1.5rem; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; background: rgba(255,255,255,0.05);">
+            <h3 style="margin: 0 0 0.75rem 0;">Current Plan</h3>
+            <p style="margin: 0.25rem 0; color: rgba(255,255,255,0.9); font-size: 1rem;"><strong>{{ current_plan.name }}</strong>{% if current_plan.is_family and current_plan.owner_name %} (Family plan shared by {{ current_plan.owner_name }}){% endif %}</p>
+            <p style="margin: 0.25rem 0; color: rgba(255,255,255,0.75);">Duration: {{ current_plan.duration_text }}</p>
+            <p style="margin: 0.25rem 0; color: rgba(255,255,255,0.75);">Price: Rs. {{ (current_plan.price_pkr * (1 - current_plan.discount_percentage / 100)) | round(0) if current_plan.discount_percentage else current_plan.price_pkr }}</p>
+            {% if current_plan.is_family %}
+            <p style="margin: 0.5rem 0 0 0; color: rgba(255,255,255,0.8);">You are part of a family plan. If you subscribe on your own, you will automatically leave the family group and get a personal subscription.</p>
+            {% else %}
+            <p style="margin: 0.5rem 0 0 0; color: rgba(255,255,255,0.8);">Your active plan is shown here so you can compare and upgrade easily.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if family_group_member %}
+        <div class="pending-notice" style="margin: 1.5rem 0; padding: 1rem; border: 1px solid rgba(229, 9, 20, 0.3); border-radius: 12px; background: rgba(229, 9, 20, 0.08); color: #fff;">
+            <strong>Note:</strong> You are currently part of a family group. Selecting a plan will automatically remove you from the group and create your own subscription request.
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<section id="plans" class="section section-glass">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Flexible options</span>
+            <h2>Choose Your Plan</h2>
+        </div>
+    </div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if pending_payment %}
+    <!-- Pending Payment Status -->
+    <div class="pending-status-section">
+        <div class="pending-status-card">
+            <div class="status-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="#e50914" stroke-width="2" fill="none"/>
+                    <path d="M12 6v6l4 2" stroke="#e50914" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="status-content">
+                <h2>Payment Pending Approval</h2>
+                <p>You have submitted a payment request that is currently under review by our admin team.</p>
+                <div class="pending-details">
+                    <div class="detail-item">
+                        <strong>Plan:</strong> {{ pending_payment.plan_name }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Amount:</strong> Rs. {{ pending_payment.amount }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Submitted:</strong> {{ pending_payment.created_at.strftime('%d %b, %Y %H:%M') if pending_payment.created_at else 'N/A' }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>Status:</strong> <span class="status-badge pending">Under Review</span>
+                    </div>
+                </div>
+            </div>
+            <div class="status-actions">
+                <a href="{{ url_for('payment_pending') }}" class="btn btn-primary">View Details</a>
+                <a href="{{ url_for('check_status') }}" class="btn btn-secondary">Check Status</a>
+                <a href="#plans" class="btn btn-outline" onclick="showUpgradeOptions()">Upgrade Plan</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="subscription-plans">
+        {% for plan in plans %}
+        <div class="plan-card {% if plan.discount_percentage > 0 %}featured{% endif %}">
+            {% if plan.discount_percentage > 0 %}
+            <div class="discount-badge">{{ plan.discount_percentage }}% OFF</div>
+            {% endif %}
+            <div class="plan-header">
+                <h3>{{ plan.name }}</h3>
+                <div class="plan-price">
+                    {% if plan.discount_percentage > 0 %}
+                        <span class="original-price">Rs. {{ plan.price_pkr }}</span>
+                        <span class="discounted-price">Rs. {{ (plan.price_pkr * (1 - plan.discount_percentage / 100)) | round(0) }}</span>
+                    {% else %}
+                        <span class="current-price">Rs. {{ plan.price_pkr }}</span>
+                    {% endif %}
+                    <span class="plan-duration">/ {{ plan.duration_text }}</span>
+                </div>
+            </div>
+            <div class="plan-features">
+                <ul>
+                    {% for feature in plan.features.split(',') %}
+                    <li>{{ feature.strip() }}</li>
+                    {% endfor %}
+                    <li>👨‍👩‍👧‍👦 Up to {{ plan.max_users }} user{{ 's' if plan.max_users > 1 else '' }}</li>
+                </ul>
+            </div>
+            {% if pending_payment %}
+            <button class="btn btn-secondary btn-full" disabled>
+                Payment Pending - {{ pending_payment.plan_name }}
+            </button>
+            <div class="pending-notice">
+                <small>You can only have one pending payment at a time. Please wait for approval or cancel your current request.</small>
+            </div>
+            {% else %}
+            <button class="btn btn-primary btn-full" onclick="selectPlan({{ plan.id }}, '{{ plan.name }}', {{ (plan.price_pkr * (1 - plan.discount_percentage / 100)) | round(0) }})">
+                Subscribe Now
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Complete Your Payment</h2>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="payment-summary">
+                <h3>Plan: <span id="selectedPlan"></span></h3>
+                <p class="amount">Amount: Rs. <span id="selectedAmount"></span></p>
+            </div>
+
+            <form id="paymentForm" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="plan_id" id="planIdInput">
+
+                <div class="form-group">
+                    <label for="payment_method">Payment Method *</label>
+                    <select name="payment_method" id="payment_method" required onchange="toggleBankFields()">
+                        <option value="">Select Payment Method</option>
+                        <option value="easypaisa">Easypaisa</option>
+                        <option value="jazzcash">JazzCash</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="custom">Other (Specify)</option>
+                    </select>
+                </div>
+
+                <div id="bankFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="bank_name">Bank Name</label>
+                        <input type="text" name="bank_name" id="bank_name" placeholder="e.g., HBL, UBL, MCB">
+                    </div>
+                    <div class="form-group">
+                        <label for="account_number">Account Number</label>
+                        <input type="text" name="account_number" id="account_number" placeholder="Your account number">
+                    </div>
+                    <div class="form-group">
+                        <label for="account_holder">Account Holder Name</label>
+                        <input type="text" name="account_holder" id="account_holder" placeholder="Account holder name">
+                    </div>
+                </div>
+
+                <div class="bank-details">
+                    <h4>Our Payment Details</h4>
+                    <div class="bank-info">
+                        {% if payment_info %}
+                            {% for payment in payment_info %}
+                                <div class="bank-item">
+                                    <strong>{{ payment.payment_method }}</strong>
+                                    {% if payment.account_title %}<p>Account Title: {{ payment.account_title }}</p>{% endif %}
+                                    {% if payment.account_number %}<p>Account Number: {{ payment.account_number }}</p>{% endif %}
+                                    {% if payment.bank_name %}<p>Bank/Provider: {{ payment.bank_name }}</p>{% endif %}
+                                    {% if payment.branch_code %}<p>Branch Code: {{ payment.branch_code }}</p>{% endif %}
+                                    {% if payment.instructions %}<p>{{ payment.instructions }}</p>{% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="bank-item">
+                                <strong>HBL (Habib Bank Limited)</strong>
+                                <p>Account Title: StreamFlix Services</p>
+                                <p>Account Number: 1234-567890-123</p>
+                                <p>IBAN: PK36HABB0012345678901234</p>
+                            </div>
+                            <div class="bank-item">
+                                <strong>Easypaisa</strong>
+                                <p>Account: 0300-1234567</p>
+                            </div>
+                            <div class="bank-item">
+                                <strong>JazzCash</strong>
+                                <p>Account: 0300-7654321</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="screenshot">Payment Screenshot *</label>
+                    <input type="file" name="screenshot" id="screenshot" accept="image/*" required>
+                    <small>Upload a clear screenshot of your payment confirmation</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <button class="scroll-to-top" onclick="scrollToTop()" id="scrollToTopBtn" style="display: none;">↑</button>
+</div>
+
+<style>
+.subscription-plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.plan-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: 0 20px 40px rgba(229, 9, 20, 0.2);
+}
+
+.plan-card.featured {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 30px rgba(229, 9, 20, 0.3);
+}
+
+.discount-badge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: var(--gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.plan-header h3 {
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.plan-price {
+    margin-bottom: 1.5rem;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.2rem;
+}
+
+.discounted-price, .current-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e50914;
+}
+
+.plan-duration {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.plan-features ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+}
+
+.plan-features li {
+    padding: 0.5rem 0;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.plan-features li:before {
+    content: "✓";
+    color: #e50914;
+    margin-right: 0.5rem;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.close {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #e50914;
+}
+
+.modal-body {
+    padding: 2rem;
+    overflow-y: auto;
+    flex: 1;
+    max-height: calc(90vh - 120px);
+}
+
+.payment-summary {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-summary h3 {
+    margin: 0 0 0.5rem 0;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.amount {
+    font-size: 1.3rem;
+    color: #e50914;
+    font-weight: bold;
+    margin: 0;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input::placeholder, .form-group select option {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group select option {
+    background: #2d2d2d;
+    color: #fff;
+}
+
+.bank-details {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bank-details h4 {
+    margin: 0 0 1rem 0;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.bank-info {
+    display: grid;
+    gap: 1rem;
+}
+
+.bank-item {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #e50914;
+    transition: all 0.3s ease;
+}
+
+.bank-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(5px);
+}
+
+.bank-item strong {
+    color: #e50914;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.bank-item p {
+    margin: 0.25rem 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.form-group input[type="file"] {
+    padding: 0.5rem;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+}
+
+.form-group input[type="file"]:hover {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+/* Pending Status Section */
+.pending-status-section {
+    margin-bottom: 3rem;
+}
+
+.pending-status-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.status-icon {
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.status-content {
+    flex: 1;
+}
+
+.status-content h2 {
+    color: #e50914;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.status-content p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.pending-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 3px solid #e50914;
+}
+
+.detail-item strong {
+    color: #e50914;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.detail-item span {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-badge.pending {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-actions {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #e50914;
+    border: 2px solid #e50914;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-outline:hover {
+    background: #e50914;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+}
+
+.pending-notice {
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.pending-notice small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+    .subscription-plans {
+        grid-template-columns: 1fr;
+    }
+
+    .pending-status-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .status-actions {
+        justify-content: center;
+    }
+
+    .pending-details {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .modal-content {
+    .subscription-plans {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        margin: 1% auto;
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        max-height: calc(95vh - 100px);
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .bank-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Scroll enhancements */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #e50914;
+}
+
+/* Scroll to top button */
+.scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: #e50914;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 1002;
+    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+    transition: all 0.3s ease;
+}
+
+.scroll-to-top:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(229, 9, 20, 0.4);
+}
+
+/* Form validation styles */
+.form-group.error input,
+.form-group.error select {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+.form-group.error label::after {
+    content: ' *';
+    color: #ff6b6b;
+}
+
+.form-group.success input,
+.form-group.success select {
+    border-color: #51cf66;
+    box-shadow: 0 0 0 3px rgba(81, 207, 102, 0.2);
+}
+
+/* Loading state for form */
+.form-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.form-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #e50914;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+function selectPlan(planId, planName, amount) {
+    document.getElementById('selectedPlan').textContent = planName;
+    document.getElementById('selectedAmount').textContent = amount;
+    document.getElementById('planIdInput').value = planId;
+    document.getElementById('paymentModal').style.display = 'block';
+    // Scroll to top of modal when opened
+    setTimeout(() => {
+        document.querySelector('.modal-body').scrollTop = 0;
+    }, 100);
+}
+
+function closeModal() {
+    document.getElementById('paymentModal').style.display = 'none';
+    document.getElementById('paymentForm').reset();
+    document.getElementById('bankFields').style.display = 'none';
+}
+
+function toggleBankFields() {
+    const method = document.getElementById('payment_method').value;
+    const bankFields = document.getElementById('bankFields');
+    if (method === 'bank_transfer' || method === 'custom') {
+        bankFields.style.display = 'block';
+        // Smooth scroll to bank fields
+        setTimeout(() => {
+            bankFields.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+    } else {
+        bankFields.style.display = 'none';
+    }
+}
+
+// Smooth scroll to form sections
+function scrollToSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Add scroll indicator for long forms
+document.addEventListener('DOMContentLoaded', function() {
+    const modalBody = document.querySelector('.modal-body');
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+    if (modalBody) {
+        modalBody.addEventListener('scroll', function() {
+            const scrollTop = this.scrollTop;
+            const scrollHeight = this.scrollHeight;
+            const clientHeight = this.clientHeight;
+
+            // Show/hide scroll to top button
+            if (scrollToTopBtn) {
+                if (scrollTop > 200) {
+                    scrollToTopBtn.style.display = 'flex';
+                } else {
+                    scrollToTopBtn.style.display = 'none';
+                }
+            }
+        });
+    }
+});
+
+// Scroll to top function
+function scrollToTop() {
+    const modalBody = document.querySelector('.modal-body');
+    if (modalBody) {
+        modalBody.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('paymentModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+// Handle form submission with loading state
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+
+    // Re-enable after 10 seconds as fallback
+    setTimeout(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }, 10000);
+});
+</script>
+{% endblock %}
+

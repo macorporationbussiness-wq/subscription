@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Website Settings{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .settings-form {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .color-input-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .color-preview {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-submit {
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>⚙️ Website Settings</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Manage website appearance and branding</p>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}">💳 Payments</a>
+        <a href="{{ url_for('admin_subscriptions') }}">📋 Subscriptions</a>
+        <a href="{{ url_for('admin_family_groups') }}">👨‍👩‍👧‍👦 Family Groups</a>
+        <a href="{{ url_for('admin_website_settings') }}" class="active">⚙️ Website Settings</a>
+        <a href="{{ url_for('admin_social_media') }}">📱 Social Media</a>
+        <a href="{{ url_for('admin_about_us') }}">ℹ️ About Us</a>
+        <a href="{{ url_for('admin_contact_info') }}">📞 Contact Info</a>
+        <a href="{{ url_for('admin_payment_info') }}">💰 Payment Info</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <!-- Settings Form -->
+    <form method="POST" class="settings-form">
+        <div class="settings-grid">
+            <div class="form-group">
+                <label for="site_name">Website Name</label>
+                <input type="text" id="site_name" name="site_name" value="{{ settings.site_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="logo_url">Logo URL</label>
+                <input type="url" id="logo_url" name="logo_url" value="{{ settings.logo_url or '' }}" placeholder="https://example.com/logo.png">
+            </div>
+
+            <div class="form-group">
+                <label for="favicon_url">Favicon URL</label>
+                <input type="url" id="favicon_url" name="favicon_url" value="{{ settings.favicon_url or '' }}" placeholder="https://example.com/favicon.ico">
+            </div>
+
+            <div class="form-group">
+                <label>Primary Color</label>
+                <div class="color-input-group">
+                    <input type="color" id="primary_color" name="primary_color" value="{{ settings.primary_color }}">
+                    <div class="color-preview" style="background-color: {{ settings.primary_color }};"></div>
+                    <input type="text" value="{{ settings.primary_color }}" readonly style="flex: 1;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Secondary Color</label>
+                <div class="color-input-group">
+                    <input type="color" id="secondary_color" name="secondary_color" value="{{ settings.secondary_color }}">
+                    <div class="color-preview" style="background-color: {{ settings.secondary_color }};"></div>
+                    <input type="text" value="{{ settings.secondary_color }}" readonly style="flex: 1;">
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" class="btn-submit">💾 Save Settings</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Update color preview when color picker changes
+    document.getElementById('primary_color').addEventListener('input', function() {
+        document.querySelector('.color-preview').style.backgroundColor = this.value;
+        this.nextElementSibling.nextElementSibling.value = this.value;
+    });
+
+    document.getElementById('secondary_color').addEventListener('input', function() {
+        this.previousElementSibling.style.backgroundColor = this.value;
+        this.nextElementSibling.value = this.value;
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - About StreamFlix{% endblock %}
+{% block content %}
+<section class="hero-fullscreen">
+    <div class="hero-bg" style="background-image: url('{{ about_us.image_url or 'https://image.tmdb.org/t/p/original/ww7hJHwjY9icW7MSZz2dnQ88wD1.jpg' }}');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="eyebrow">Our story</span>
+        <div class="hero-headline">
+            <h1>{{ about_us.title or 'Redefining cinematic streaming for the modern era.' }}</h1>
+            <p>{{ about_us.content or 'StreamFlix was born from a simple idea: entertainment should feel as premium as the movies themselves. We\'re not just another streaming service—we\'re your gateway to Hollywood\'s finest.' }}</p>
+        </div>
+        <div class="hero-status-cards">
+            <div class="hero-stat">
+                <span>500+</span>
+                <p>Movies & shows</p>
+            </div>
+            <div class="hero-stat">
+                <span>10M+</span>
+                <p>Happy viewers</p>
+            </div>
+            <div class="hero-stat">
+                <span>2026</span>
+                <p>Founded</p>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="{{ url_for('movies_page') }}" class="btn btn-primary">Start Watching</a>
+            <a href="{{ url_for('contact') }}" class="btn btn-secondary">Contact Us</a>
+        </div>
+    </div>
+</section>
+
+<section class="section section-glass about-summary">
+    <div class="about-summary-content">
+        <div class="summary-block">
+            <h3>Our Mission</h3>
+            <p>{{ about_us.mission or 'To provide the best streaming experience with affordable pricing and excellent customer service.' }}</p>
+        </div>
+        <div class="summary-block">
+            <h3>Our Vision</h3>
+            <p>{{ about_us.vision or 'To become the leading streaming platform globally, known for quality content and user satisfaction.' }}</p>
+        </div>
+    </div>
+</section>
+
+<section class="section section-glass about-grid">
+    <div class="feature-card large-card">
+        <h2>🎬 Immersive Discovery</h2>
+        <p>Find new movies and shows through rich visuals, editorial recommendations, and stunning artwork that brings each story to life.</p>
+    </div>
+    <div class="feature-card">
+        <h3>⚡ Premium Playback</h3>
+        <p>High-definition streaming with low-latency playback and beautifully crafted UI that never interrupts your viewing experience.</p>
+    </div>
+    <div class="feature-card">
+        <h3>🌍 Unlimited Access</h3>
+        <p>Watch anywhere, on any device, with flexible plans built for your lifestyle and premium features that adapt to you.</p>
+    </div>
+    <div class="feature-card">
+        <h3>👥 Community-First</h3>
+        <p>Share favorites, save watchlists, and explore trending collections together in a platform designed for movie lovers.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Why choose us</span>
+            <h2>Premium streaming, redefined</h2>
+        </div>
+    </div>
+    <div class="intro-grid">
+        <article class="feature-card">
+            <h3>4K Ultra HD</h3>
+            <p>Crystal-clear visuals with Dolby Atmos sound for the ultimate home theater experience.</p>
+        </article>
+        <article class="feature-card">
+            <h3>Zero Ads</h3>
+            <p>Commercial-free viewing with uninterrupted storytelling and premium content only.</p>
+        </article>
+        <article class="feature-card">
+            <h3>Offline Viewing</h3>
+            <p>Download your favorites and watch anywhere, even without an internet connection.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}
+

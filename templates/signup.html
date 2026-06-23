@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ website_settings.site_name or 'StreamFlix' }} - Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+    <div class="auth-background"></div>
+    <div class="auth-frame">
+        <div class="auth-panel glass-panel">
+            <div class="auth-brand">
+                <a href="{{ url_for('index') }}">{{ website_settings.site_name or 'StreamFlix' }}</a>
+            </div>
+            <h1>Create your account</h1>
+            <p>Start streaming with premium access to movies, series, and more.</p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="auth-form">
+                <label>Name</label>
+                <input type="text" name="name" placeholder="Your name" required>
+                <label>Email</label>
+                <input type="email" name="email" placeholder="you@example.com" required>
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Create a password" required>
+                <button type="submit" class="btn btn-primary btn-full">Sign Up</button>
+            </form>
+            <div class="auth-footer">
+                <span>Already have an account?</span>
+                <a href="{{ url_for('login') }}" class="link-text">Sign In</a>
+                <span style="margin: 0 0.5rem;">•</span>
+                <a href="{{ url_for('join_family') }}" class="link-text">👨‍👩‍👧‍👦 Join Family</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Unlimited Movies, TV Shows & More{% endblock %}
+{% block content %}
+{% if featured_movies %}
+<!-- Hero Slider -->
+<section class="hero-slider loading">
+    <div class="slider-container">
+        {% for movie in featured_movies %}
+        <div class="slide" style="background-image: url('{{ movie.banner_image or movie.thumbnail or 'https://via.placeholder.com/1920x1080?text=StreamFlix+Banner' }}');" data-bg="{{ movie.banner_image or movie.thumbnail or 'https://via.placeholder.com/1920x1080?text=StreamFlix+Banner' }}">
+            <div class="slide-overlay"></div>
+            <div class="slide-content">
+                <div class="slide-info">
+                    <span class="eyebrow">Featured</span>
+                    <h1>{{ movie.title }}</h1>
+                    <p>{{ movie.description if movie.description else (movie.cast[:120] if movie.cast else 'Experience the thrill of cinematic storytelling with each new release.') }}</p>
+                    <div class="slide-actions">
+                        <a href="{{ url_for('movie_detail', movie_id=movie.id) }}" class="btn btn-primary">▶ Watch Now</a>
+                        <a href="{{ url_for('movie_detail', movie_id=movie.id) }}" class="btn btn-secondary">ℹ More Info</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="slider-nav">
+        <button class="slider-prev">‹</button>
+        <div class="slider-dots">
+            {% for movie in featured_movies %}
+            <span class="dot" data-slide="{{ loop.index0 }}"></span>
+            {% endfor %}
+        </div>
+        <button class="slider-next">›</button>
+    </div>
+</section>
+{% else %}
+<!-- Default Hero -->
+<section class="hero hero-fullscreen">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="eyebrow">Curated for you</span>
+        <div class="hero-headline">
+            <h1>Stream the biggest stories in vivid cinematic style.</h1>
+            <p>Get instant access to premium films, award-winning series, and bold originals — all in one polished entertainment destination.</p>
+        </div>
+        <div class="hero-status-cards">
+            <div class="hero-stat">
+                <span>4K</span>
+                <p>Ultra HD viewing</p>
+            </div>
+            <div class="hero-stat">
+                <span>100+</span>
+                <p>Fresh releases weekly</p>
+            </div>
+            <div class="hero-stat">
+                <span>Ad-free</span>
+                <p>Premium playback</p>
+            </div>
+        </div>
+        <div class="hero-actions">
+            {% if user %}
+                {% if user.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">Admin Dashboard</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Sign Out</a>
+                {% else %}
+                    {% if user.subscription_status == 'approved' %}
+                        {% if not family_group %}
+                            <a href="{{ url_for('generate_family_code') }}" class="btn btn-primary" style="background: #e50914;">👨‍👩‍👧‍👦 Create Family Group</a>
+                            <a href="{{ url_for('movies_page') }}" class="btn btn-secondary">Browse Movies</a>
+                        {% else %}
+                            <a href="{{ url_for('movies_page') }}" class="btn btn-primary">Browse Movies</a>
+                            <a href="{{ url_for('settings') }}" class="btn btn-secondary">My Profile</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('join_family') }}" class="btn btn-primary">👨‍👩‍👧‍👦 Join Family</a>
+                        <a href="{{ url_for('subscription') }}" class="btn btn-secondary">Subscribe Now</a>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Sign In</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-secondary">Create Account</a>
+            {% endif %}
+        </div>
+        <div class="hero-footer">
+            <span class="hero-badge">New release</span>
+            <span class="hero-badge">Top-rated picks</span>
+            <span class="hero-badge">Watch on any device</span>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="section section-glass intro-grid">
+    <article class="feature-card">
+        <h3>Fast playback</h3>
+        <p>Smooth streaming with cinematic quality across every device.</p>
+    </article>
+    <article class="feature-card">
+        <h3>Premium curation</h3>
+        <p>Handpicked collections, new releases, and hidden gems every week.</p>
+    </article>
+    <article class="feature-card">
+        <h3>Flexible plans</h3>
+        <p>Easy subscription options with instant access and no hidden fees.</p>
+    </article>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Recommended for you</span>
+            <h2>Personalized picks</h2>
+        </div>
+        <a href="{{ url_for('movies_page') }}" class="link-text">See all movies</a>
+    </div>
+    <div class="carousel-row">
+        {% for movie in recommendations %}
+        <article class="movie-card">
+            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ movie.thumbnail }}" alt="{{ movie.title }}">
+                    <div class="movie-card-hover"><span>▶</span></div>
+                </div>
+            </a>
+            <div class="movie-card-copy">
+                <h3>{{ movie.title }}</h3>
+                <span>{{ movie.rating }}/10</span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+{% if recently_watched %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Recently watched</span>
+            <h2>Continue watching</h2>
+        </div>
+        <a href="{{ url_for('watchlist') }}" class="link-text">View watchlist</a>
+    </div>
+    <div class="carousel-row">
+        {% for movie in recently_watched %}
+        <article class="movie-card">
+            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ movie.thumbnail }}" alt="{{ movie.title }}">
+                    <div class="movie-card-hover"><span>▶</span></div>
+                </div>
+            </a>
+            <div class="movie-card-copy">
+                <h3>{{ movie.title }}</h3>
+                <span>{{ movie.rating }}/10</span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="section">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Featured</span>
+            <h2>Trending Now</h2>
+        </div>
+        <a href="{{ url_for('movies_page') }}" class="link-text">See all movies</a>
+    </div>
+    <div class="carousel-row">
+        {% for movie in trending %}
+        <article class="movie-card">
+            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ movie.thumbnail }}" alt="{{ movie.title }}">
+                    <div class="movie-card-hover"><span>▶</span></div>
+                </div>
+            </a>
+            <div class="movie-card-copy">
+                <h3>{{ movie.title }}</h3>
+                <span>{{ movie.rating }}/10</span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section section-dark">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Cinema</span>
+            <h2>Action Movies</h2>
+        </div>
+        <a href="{{ url_for('movies_page') }}" class="link-text">Browse actions</a>
+    </div>
+    <div class="carousel-row">
+        {% for movie in action_movies %}
+        <article class="movie-card">
+            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ movie.thumbnail }}" alt="{{ movie.title }}">
+                    <div class="movie-card-hover"><span>▶</span></div>
+                </div>
+            </a>
+            <div class="movie-card-copy">
+                <h3>{{ movie.title }}</h3>
+                <span>{{ movie.rating }}/10</span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">New arrivals</span>
+            <h2>New Releases</h2>
+        </div>
+        <a href="{{ url_for('movies_page') }}" class="link-text">Explore new titles</a>
+    </div>
+    <div class="carousel-row">
+        {% for movie in new_releases %}
+        <article class="movie-card">
+            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ movie.thumbnail }}" alt="{{ movie.title }}">
+                    <div class="movie-card-hover"><span>▶</span></div>
+                </div>
+            </a>
+            <div class="movie-card-copy">
+                <h3>{{ movie.title }}</h3>
+                <span>{{ movie.rating }}/10</span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section faq-section">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">FAQ</span>
+            <h2>Your questions answered</h2>
+        </div>
+    </div>
+    <div class="faq-grid">
+        <div class="faq-card">
+            <button class="faq-question">What is this platform?</button>
+            <div class="faq-answer"><p>StreamFlix is a premium OTT destination for movies, TV shows, and originals with cinematic design and seamless playback.</p></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-question">Pricing plans?</button>
+            <div class="faq-answer"><p>Choose flexible plans for individual or family viewing, with no hidden fees and instant access.</p></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-question">Where can I watch?</button>
+            <div class="faq-answer"><p>Watch on smart TVs, mobile devices, laptops, and tablets with responsive playback across every screen.</p></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-question">How to cancel?</button>
+            <div class="faq-answer"><p>Cancel anytime through your account, and continue watching until your billing period ends.</p></div>
+        </div>
+        <div class="faq-card">
+            <button class="faq-question">Is it kid-friendly?</button>
+            <div class="faq-answer"><p>Yes. Use profile controls and curated collections to keep kids safe with family-friendly content.</p></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

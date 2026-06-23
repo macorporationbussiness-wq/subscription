@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Edit Movie{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .section-header {
+        margin-bottom: 2rem;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-header p {
+        color: rgba(255, 255, 255, 0.75);
+        margin: 0;
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+    }
+
+    .admin-nav a:hover {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .form-container {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .form-grid-full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.7rem;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.9rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(229, 9, 20, 0.5);
+        box-shadow: 0 0 15px rgba(229, 9, 20, 0.2);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-group select option {
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 1rem;
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(229, 9, 20, 0.4);
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 1rem;
+        background: linear-gradient(135deg, #666, #888);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(100, 100, 100, 0.4);
+    }
+
+    .preview-image {
+        width: 100%;
+        max-width: 200px;
+        border-radius: 12px;
+        margin-top: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #e50914;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 2rem 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(229, 9, 20, 0.3);
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <h1>✏️ Edit Movie</h1>
+        <p>Update movie information and details</p>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_movies') }}">🎬 Movies</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <!-- Edit Movie Form -->
+    <div class="form-container">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-section-title">Basic Information</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="title">Movie Title *</label>
+                    <input type="text" id="title" name="title" value="{{ movie.title if movie else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="category_id">Category *</label>
+                    <select id="category_id" name="category_id" required>
+                        <option value="">Select Category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if movie and movie.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Banner Description</label>
+                    <textarea id="description" name="description" placeholder="Short banner teaser">{{ movie.description if movie else '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="rating">Rating (0-10)</label>
+                    <input type="number" id="rating" name="rating" value="{{ movie.rating if movie else '' }}" min="0" max="10" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="trailer_url">Trailer URL</label>
+                    <input type="url" id="trailer_url" name="trailer_url" value="{{ movie.trailer_url if movie else '' }}" placeholder="https://youtube.com/...">
+                </div>
+                <div class="form-group">
+                    <label for="cast">Cast (comma separated)</label>
+                    <input type="text" id="cast" name="cast" value="{{ movie.cast if movie else '' }}" placeholder="Actor 1, Actor 2, ...">
+                </div>
+                <div class="form-group">
+                    <label for="video_file">Video File</label>
+                    <input type="file" id="video_file" name="video_file" accept="video/*">
+                </div>
+                <div class="form-group">
+                    <label for="video_url">Or Video URL</label>
+                    <input type="url" id="video_url" name="video_url" value="{{ movie.video_url if movie else '' }}" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label for="thumbnail">Thumbnail</label>
+                    <input type="file" id="thumbnail" name="thumbnail" accept="image/*">
+                    {% if movie and movie.thumbnail %}
+                    <img src="{{ url_for('uploaded_file', filename=movie.thumbnail.split('/')[-1]) }}" alt="{{ movie.title }}" class="preview-image">
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="banner_image">Banner Image (1920x1080 / 2560x1440)</label>
+                    <input type="file" id="banner_image" name="banner_image" accept="image/*">
+                    {% if movie and movie.banner_image %}
+                    <img src="{{ url_for('uploaded_file', filename=movie.banner_image.split('/')[-1]) }}" alt="{{ movie.title }} Banner" class="preview-image">
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="screenshots">Screenshots (multiple)</label>
+                    <input type="file" id="screenshots" name="screenshots" accept="image/*" multiple>
+                </div>
+                <div class="form-group form-grid-full">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show_in_banner" name="show_in_banner" value="1" {% if movie and movie.show_in_banner %}checked{% endif %}>
+                        <span>Show in Homepage Banner</span>
+                    </label>
+                </div>
+                <div class="form-group form-grid-full">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="featured" name="featured" value="1" {% if movie and movie.featured %}checked{% endif %}>
+                        <span>Legacy featured flag (kept for compatibility)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">💾 Save Changes</button>
+                <a href="{{ url_for('admin_movies') }}" class="btn-cancel">✕ Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+

@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Social Media{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+    }
+
+    .form-section,
+    .list-section {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+    }
+
+    .btn-submit {
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+
+    .social-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .social-info {
+        flex: 1;
+    }
+
+    .social-platform {
+        font-weight: 600;
+        color: #e50914;
+        margin-bottom: 0.25rem;
+    }
+
+    .social-url {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    .social-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-edit {
+        background: rgba(33, 150, 243, 0.2);
+        color: #2196f3;
+    }
+
+    .btn-edit:hover {
+        background: rgba(33, 150, 243, 0.3);
+    }
+
+    .btn-delete {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+    }
+
+    .btn-delete:hover {
+        background: rgba(244, 67, 54, 0.3);
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    @media (max-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>📱 Social Media Management</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Manage social media platforms and links</p>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}">💳 Payments</a>
+        <a href="{{ url_for('admin_subscriptions') }}">📋 Subscriptions</a>
+        <a href="{{ url_for('admin_family_groups') }}">👨‍👩‍👧‍👦 Family Groups</a>
+        <a href="{{ url_for('admin_website_settings') }}">⚙️ Website Settings</a>
+        <a href="{{ url_for('admin_social_media') }}" class="active">📱 Social Media</a>
+        <a href="{{ url_for('admin_about_us') }}">ℹ️ About Us</a>
+        <a href="{{ url_for('admin_contact_info') }}">📞 Contact Info</a>
+        <a href="{{ url_for('admin_payment_info') }}">💰 Payment Info</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <div class="content-grid">
+        <!-- Add/Edit Form -->
+        <div class="form-section">
+            <h2 style="color: #e50914; margin-bottom: 1.5rem;">Add Social Media Platform</h2>
+            <form method="POST">
+                <input type="hidden" name="add_social" value="1">
+                <div class="form-group">
+                    <label for="platform">Platform Name</label>
+                    <input type="text" id="platform" name="platform" placeholder="e.g., Facebook, Twitter, Instagram" required>
+                </div>
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="url" id="url" name="url" placeholder="https://facebook.com/yourpage" required>
+                </div>
+                <div class="form-group">
+                    <label for="icon_class">Icon Class (FontAwesome)</label>
+                    <input type="text" id="icon_class" name="icon_class" placeholder="fab fa-facebook-f" required>
+                </div>
+                <div class="form-group">
+                    <label for="display_order">Display Order</label>
+                    <input type="number" id="display_order" name="display_order" value="0" min="0">
+                </div>
+                <button type="submit" class="btn-submit">➕ Add Platform</button>
+            </form>
+        </div>
+
+        <!-- Social Media List -->
+        <div class="list-section">
+            <h2 style="color: #e50914; margin-bottom: 1.5rem;">Current Platforms</h2>
+            {% if social_media %}
+                {% for social in social_media %}
+                <div class="social-item">
+                    <div class="social-info">
+                        <div class="social-platform">{{ social.platform }}</div>
+                        <div class="social-url">{{ social.url }}</div>
+                    </div>
+                    <div class="social-actions">
+                        <button class="btn-edit" onclick="editSocial({{ social.id }}, '{{ social.platform }}', '{{ social.url }}', '{{ social.icon_class }}', {{ social.display_order }})">✏️ Edit</button>
+                        <a href="{{ url_for('admin_delete_social_media', social_id=social.id) }}" class="btn-delete" onclick="return confirm('Delete this social media platform?')">🗑️ Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-message">
+                    <h3>No Social Media Platforms</h3>
+                    <p>Add your first social media platform using the form</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: rgba(30,30,30,0.95); padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px;">
+        <h3 style="color: #e50914; margin-bottom: 1rem;">Edit Social Media Platform</h3>
+        <form method="POST">
+            <input type="hidden" name="update_social" value="1">
+            <input type="hidden" id="edit_social_id" name="social_id">
+            <div class="form-group">
+                <label>Platform Name</label>
+                <input type="text" id="edit_platform" name="platform" required>
+            </div>
+            <div class="form-group">
+                <label>URL</label>
+                <input type="url" id="edit_url" name="url" required>
+            </div>
+            <div class="form-group">
+                <label>Icon Class</label>
+                <input type="text" id="edit_icon_class" name="icon_class" required>
+            </div>
+            <div class="form-group">
+                <label>Display Order</label>
+                <input type="number" id="edit_display_order" name="display_order" min="0">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn-submit" style="flex: 1;">💾 Update</button>
+                <button type="button" onclick="closeEditModal()" style="flex: 1; background: #666;">❌ Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editSocial(id, platform, url, iconClass, displayOrder) {
+    document.getElementById('edit_social_id').value = id;
+    document.getElementById('edit_platform').value = platform;
+    document.getElementById('edit_url').value = url;
+    document.getElementById('edit_icon_class').value = iconClass;
+    document.getElementById('edit_display_order').value = displayOrder;
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+</script>
+
+{% endblock %}
+

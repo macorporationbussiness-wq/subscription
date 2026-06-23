@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Settings - StreamFlix{% endblock %}
+{% block content %}
+<section class="page-hero page-hero-sm">
+    <div class="page-hero-copy">
+        <span class="eyebrow">Account</span>
+        <h1>Manage your preferences</h1>
+        <p>Customize your streaming experience and account settings.</p>
+    </div>
+</section>
+
+<section class="section section-glass">
+    <div class="section-header">
+        <h2>Account Settings</h2>
+    </div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <div class="settings-form">
+        <h3>Update Profile</h3>
+        <form method="POST" class="contact-form">
+            <input type="hidden" name="update_profile" value="1">
+            <label>Name</label>
+            <input type="text" name="name" value="{{ user.name }}" required>
+            <label>Email</label>
+            <input type="email" name="email" value="{{ user.email }}" required>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+    <div class="settings-form">
+        <h3>Change Password</h3>
+        <form method="POST" class="contact-form">
+            <input type="hidden" name="change_password" value="1">
+            <label>Old Password</label>
+            <input type="password" name="old_password" placeholder="Old Password" required>
+            <label>New Password</label>
+            <input type="password" name="new_password" placeholder="New Password" required>
+            <button type="submit" class="btn btn-primary">Change Password</button>
+        </form>
+    </div>
+    <div class="subscription-status">
+        <h3>Subscription Status: {{ user.subscription_status.title() }}</h3>
+        {% if user.subscription_status == 'approved' and not family_group %}
+        <div style="margin-top: 1rem;">
+            <a href="{{ url_for('generate_family_code') }}" class="btn btn-primary" style="background: #e50914;">👨‍👩‍👧‍👦 Create Family Group</a>
+            <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; margin-top: 0.5rem;">Share your subscription with up to {{ plan_max_users }} family members</p>
+        </div>
+        {% endif %}
+        {% if user.subscription_status == 'approved' %}
+        <div style="margin-top: 1rem;">
+            <form method="POST" action="{{ url_for('cancel_subscription') }}" onsubmit="return confirm('Are you sure you want to cancel your subscription?')">
+                <button type="submit" class="btn btn-danger">Cancel Subscription</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if user.subscription_status == 'approved' %}
+    <div class="settings-form">
+        <h3>Family Sharing</h3>
+        <p style="color: rgba(255,255,255,0.75); margin-bottom: 1rem;">Share your subscription with family members using a redeem code.</p>
+
+        {% if family_group %}
+        <div class="family-group-info" style="background: rgba(229, 9, 20, 0.1); border: 1px solid rgba(229, 9, 20, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+            <h4 style="color: #e50914; margin: 0 0 1rem 0;">👨‍👩‍👧‍👦 {{ 'Your Family Group' if is_group_owner else 'Family Group Membership' }}</h4>
+            {% if family_group_owner and not is_group_owner %}
+            <p style="color: rgba(255,255,255,0.85); margin-bottom: 1rem;">You are part of {{ family_group_owner.name }}'s family subscription.</p>
+            {% endif %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <strong style="color: #fff;">Family Code:</strong>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                        <div style="font-family: monospace; font-size: 1.2rem; color: #e50914; font-weight: bold; letter-spacing: 0.1em; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 6px;">{{ family_group.code }}</div>
+                        <button onclick="copyCode('{{ family_group.code }}')" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem;">📋 Copy</button>
+                    </div>
+                </div>
+                <div>
+                    <strong style="color: #fff;">Members:</strong>
+                    <div style="color: rgba(255,255,255,0.9); margin-top: 0.5rem;">{{ family_members|length + 1 }} / {{ family_group.max_members + 1 }} total users</div>
+                </div>
+                <div>
+                    <strong style="color: #fff;">Plan:</strong>
+                    <div style="color: rgba(255,255,255,0.9); margin-top: 0.5rem;">{{ plan_name }}</div>
+                </div>
+            </div>
+
+            {% if family_members %}
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                <h5 style="color: #fff; margin: 0 0 1rem 0;">Family Members:</h5>
+                <div style="display: grid; gap: 0.5rem;">
+                    {% for member in family_members %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 8px;">
+                        <div>
+                            <div style="color: #fff; font-weight: 600;">{{ member.name }}</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">{{ member.email }}</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span style="background: rgba(229, 9, 20, 0.2); color: #e50914; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Member</span>
+                            {% if is_group_owner %}
+                            <form method="POST" action="{{ url_for('remove_family_member', member_id=member.id) }}" onsubmit="return confirm('Remove this family member?')">
+                                <button type="submit" class="btn btn-danger" style="font-size: 0.8rem; padding: 0.5rem;">Remove</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if family_group_owner and not is_group_owner %}
+            <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <form method="POST" action="{{ url_for('leave_family') }}" onsubmit="return confirm('Leave this family group?')">
+                    <button type="submit" class="btn btn-secondary">Leave Family Group</button>
+                </form>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p style="color: rgba(255,255,255,0.75); font-size: 0.9rem; margin: 0;">
+                    Share this code with family members so they can join your subscription. They can join at <a href="{{ url_for('join_family') }}" style="color: #e50914;">{{ url_for('join_family', _external=True) }}</a>
+                </p>
+            </div>
+        </div>
+        {% else %}
+        <form method="POST" action="{{ url_for('generate_family_code') }}" style="margin-bottom: 1rem;">
+            <p style="color: rgba(255,255,255,0.75); margin-bottom: 1rem;">Create a family group to share your subscription with up to {{ plan_max_users }} family members.</p>
+            <button type="submit" class="btn btn-primary" style="background: #e50914;">Create Family Group</button>
+        </form>
+        {% endif %}
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+            <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0;">
+                Want to join someone else's family group instead? <a href="{{ url_for('join_family') }}" style="color: #e50914;">Click here</a>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+function copyCode(code) {
+    navigator.clipboard.writeText(code).then(function() {
+        // Show temporary success message
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '✅ Copied!';
+        button.style.background = '#28a745';
+        setTimeout(function() {
+            button.textContent = originalText;
+            button.style.background = '';
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy code. Please copy manually.');
+    });
+}
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ website_settings.site_name }}{% endblock %}</title>
+    {% if website_settings.favicon_url %}
+    <link rel="icon" href="{{ website_settings.favicon_url }}">
+    {% endif %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --primary-color: {{ website_settings.primary_color }};
+            --secondary-color: {{ website_settings.secondary_color }};
+        }
+    </style>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="navbar">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}" class="logo">
+                    {% if website_settings.logo_url %}
+                        <img src="{{ website_settings.logo_url }}" alt="{{ website_settings.site_name }}" style="height: 40px;">
+                    {% else %}
+                        {{ website_settings.site_name }}
+                    {% endif %}
+                </a>
+                <button class="nav-toggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="{{ url_for('index') }}" class="nav-link {% if active_page == 'home' %}active{% endif %}">Home</a>
+                <a href="{{ url_for('movies_page') }}" class="nav-link {% if active_page == 'movies' %}active{% endif %}">Movies</a>
+                <a href="{{ url_for('tv_shows') }}" class="nav-link {% if active_page == 'tv_shows' %}active{% endif %}">TV Shows</a>
+                <a href="{{ url_for('subscription') }}" class="nav-link {% if active_page == 'subscription' %}active{% endif %}">Subscribe</a>
+                {% if user and user.subscription_status == 'approved' %}
+                    <a href="{{ url_for('congratulations') }}" class="nav-link {% if active_page == 'your_plan' %}active{% endif %}">Your Plan</a>
+                {% elif user and user.subscription_status != 'approved' %}
+                    <a href="{{ url_for('join_family') }}" class="nav-link {% if active_page == 'join_family' %}active{% endif %}">👨‍👩‍👧‍👦 Join Family</a>
+                {% endif %}
+                <a href="{{ url_for('watchlist') }}" class="nav-link {% if active_page == 'watchlist' %}active{% endif %}">My List</a>
+                <a href="{{ url_for('contact') }}" class="nav-link {% if active_page == 'contact' %}active{% endif %}">Contact Us</a>
+                <a href="{{ url_for('about') }}" class="nav-link {% if active_page == 'about' %}active{% endif %}">About</a>
+            </nav>
+
+            <div class="nav-actions">
+                {% if user %}
+                    {% if user.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost">Admin Panel</a>
+                    {% else %}
+                        <a href="{{ url_for('settings') }}" class="btn btn-ghost">Account Settings</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn btn-primary">Sign Out</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-ghost">Sign In</a>
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary">Create Account</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <div class="flash-content">
+                                {% if category == 'success' %}
+                                    <span class="flash-icon">✓</span>
+                                {% elif category == 'error' %}
+                                    <span class="flash-icon">✕</span>
+                                {% elif category == 'warning' %}
+                                    <span class="flash-icon">⚠</span>
+                                {% else %}
+                                    <span class="flash-icon">ℹ</span>
+                                {% endif %}
+                                <span class="flash-text">{{ message }}</span>
+                                <button class="flash-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div class="footer-grid">
+                <div>
+                    <h4>{{ website_settings.site_name }}</h4>
+                    <p>Your premium streaming destination for cinematic movies, TV shows, and originals.</p>
+                </div>
+                <div>
+                    <h4>Company</h4>
+                    <a href="{{ url_for('about') }}">About</a>
+                    <a href="{{ url_for('contact') }}">Contact</a>
+                    <a href="{{ url_for('movies_page') }}">Movies</a>
+                    <a href="{{ url_for('tv_shows') }}">TV Shows</a>
+                </div>
+                <div>
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms</a>
+                </div>
+                <div>
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        {% if social_media %}
+                            {% for social in social_media %}
+                                <a href="{{ social.url }}" target="_blank" rel="noopener">{{ social.platform }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <a href="#">Instagram</a>
+                            <a href="#">Twitter</a>
+                            <a href="#">YouTube</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">© {{ website_settings.site_name }}. Designed for premium streaming.</div>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

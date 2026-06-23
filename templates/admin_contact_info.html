@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Contact Information{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+    }
+
+    .form-section,
+    .list-section {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+    }
+
+    .btn-submit {
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+
+    .contact-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .contact-info {
+        flex: 1;
+    }
+
+    .contact-label {
+        font-weight: 600;
+        color: #e50914;
+        margin-bottom: 0.25rem;
+    }
+
+    .contact-value {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    .contact-type {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        background: rgba(33, 150, 243, 0.2);
+        color: #2196f3;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.25rem;
+    }
+
+    .contact-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-edit {
+        background: rgba(33, 150, 243, 0.2);
+        color: #2196f3;
+    }
+
+    .btn-edit:hover {
+        background: rgba(33, 150, 243, 0.3);
+    }
+
+    .btn-delete {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+    }
+
+    .btn-delete:hover {
+        background: rgba(244, 67, 54, 0.3);
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    @media (max-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>📞 Contact Information Management</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Manage contact details and information</p>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}">💳 Payments</a>
+        <a href="{{ url_for('admin_subscriptions') }}">📋 Subscriptions</a>
+        <a href="{{ url_for('admin_family_groups') }}">👨‍👩‍👧‍👦 Family Groups</a>
+        <a href="{{ url_for('admin_website_settings') }}">⚙️ Website Settings</a>
+        <a href="{{ url_for('admin_social_media') }}">📱 Social Media</a>
+        <a href="{{ url_for('admin_about_us') }}">ℹ️ About Us</a>
+        <a href="{{ url_for('admin_contact_info') }}" class="active">📞 Contact Info</a>
+        <a href="{{ url_for('admin_payment_info') }}">💰 Payment Info</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <div class="content-grid">
+        <!-- Add/Edit Form -->
+        <div class="form-section">
+            <h2 style="color: #e50914; margin-bottom: 1.5rem;">Add Contact Information</h2>
+            <form method="POST">
+                <input type="hidden" name="add_contact" value="1">
+                <div class="form-group">
+                    <label for="type">Contact Type</label>
+                    <select id="type" name="type" required>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone</option>
+                        <option value="address">Address</option>
+                        <option value="social">Social Media</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="label">Display Label</label>
+                    <input type="text" id="label" name="label" placeholder="e.g., Support Email, Customer Support" required>
+                </div>
+                <div class="form-group">
+                    <label for="value">Contact Value</label>
+                    <input type="text" id="value" name="value" placeholder="e.g., support@streamflix.com, +92-300-1234567" required>
+                </div>
+                <div class="form-group">
+                    <label for="icon_class">Icon Class (FontAwesome)</label>
+                    <input type="text" id="icon_class" name="icon_class" placeholder="fas fa-envelope" required>
+                </div>
+                <div class="form-group">
+                    <label for="display_order">Display Order</label>
+                    <input type="number" id="display_order" name="display_order" value="0" min="0">
+                </div>
+                <button type="submit" class="btn-submit">➕ Add Contact Info</button>
+            </form>
+        </div>
+
+        <!-- Contact List -->
+        <div class="list-section">
+            <h2 style="color: #e50914; margin-bottom: 1.5rem;">Current Contact Information</h2>
+            {% if contacts %}
+                {% for contact in contacts %}
+                <div class="contact-item">
+                    <div class="contact-info">
+                        <div class="contact-label">{{ contact.label }}</div>
+                        <div class="contact-value">{{ contact.value }}</div>
+                        <span class="contact-type">{{ contact.type.title() }}</span>
+                    </div>
+                    <div class="contact-actions">
+                        <button class="btn-edit" onclick="editContact({{ contact.id }}, '{{ contact.type }}', '{{ contact.label }}', '{{ contact.value }}', '{{ contact.icon_class }}', {{ contact.display_order }})">✏️ Edit</button>
+                        <a href="{{ url_for('admin_delete_contact_info', contact_id=contact.id) }}" class="btn-delete" onclick="return confirm('Delete this contact information?')">🗑️ Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-message">
+                    <h3>No Contact Information</h3>
+                    <p>Add your first contact information using the form</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: rgba(30,30,30,0.95); padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px;">
+        <h3 style="color: #e50914; margin-bottom: 1rem;">Edit Contact Information</h3>
+        <form method="POST">
+            <input type="hidden" name="update_contact" value="1">
+            <input type="hidden" id="edit_contact_id" name="contact_id">
+            <div class="form-group">
+                <label>Contact Type</label>
+                <select id="edit_type" name="type" required>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone</option>
+                    <option value="address">Address</option>
+                    <option value="social">Social Media</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Display Label</label>
+                <input type="text" id="edit_label" name="label" required>
+            </div>
+            <div class="form-group">
+                <label>Contact Value</label>
+                <input type="text" id="edit_value" name="value" required>
+            </div>
+            <div class="form-group">
+                <label>Icon Class</label>
+                <input type="text" id="edit_icon_class" name="icon_class" required>
+            </div>
+            <div class="form-group">
+                <label>Display Order</label>
+                <input type="number" id="edit_display_order" name="display_order" min="0">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn-submit" style="flex: 1;">💾 Update</button>
+                <button type="button" onclick="closeEditModal()" style="flex: 1; background: #666;">❌ Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editContact(id, type, label, value, iconClass, displayOrder) {
+    document.getElementById('edit_contact_id').value = id;
+    document.getElementById('edit_type').value = type;
+    document.getElementById('edit_label').value = label;
+    document.getElementById('edit_value').value = value;
+    document.getElementById('edit_icon_class').value = iconClass;
+    document.getElementById('edit_display_order').value = displayOrder;
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+</script>
+
+{% endblock %}
+

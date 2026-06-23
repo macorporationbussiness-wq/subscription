@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Movies - StreamFlix{% endblock %}
+{% block content %}
+<section class="hero-fullscreen">
+    <div class="hero-bg" style="background-image: url('https://image.tmdb.org/t/p/original/ww7hJHwjY9icW7MSZz2dnQ88wD1.jpg');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="eyebrow">Cinematic Collection</span>
+        <div class="hero-headline">
+            <h1>Explore thousands of movies in stunning quality.</h1>
+            <p>From blockbusters to indie gems, find your next favorite film with personalized recommendations and expert curation.</p>
+        </div>
+        <div class="hero-status-cards">
+            <div class="hero-stat">
+                <span>500+</span>
+                <p>Movies available</p>
+            </div>
+            <div class="hero-stat">
+                <span>4K</span>
+                <p>Ultra HD streaming</p>
+            </div>
+            <div class="hero-stat">
+                <span>Free</span>
+                <p>No ads, no limits</p>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="#movies-grid" class="btn btn-primary">Browse Movies</a>
+            <a href="{{ url_for('tv_shows') }}" class="btn btn-secondary">TV Shows</a>
+        </div>
+    </div>
+</section>
+
+<section class="section section-glass">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">Browse</span>
+            <h2>All Movies</h2>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search movies..." class="search-input">
+            <button class="btn btn-ghost">Search</button>
+        </div>
+    </div>
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        {% for category in categories %}
+            <button class="filter-tab" data-filter="{{ category.id }}">{{ category.name }}</button>
+        {% endfor %}
+    </div>
+    <div id="movies-grid" class="movies-grid">
+        {% for movie in movies %}
+        <article class="movie-card vertical-card" data-category="{{ movie.category_id }}">
+            <a href="{{ url_for('movie_detail', movie_id=movie.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ movie.thumbnail }}" alt="{{ movie.title }}">
+                    <div class="movie-card-hover">
+                        <span class="play-icon">▶</span>
+                    </div>
+                </div>
+            </a>
+            <div class="movie-card-info">
+                <h3>{{ movie.title }}</h3>
+                <p>{{ movie.rating }}/10 • {{ category_map[movie.category_id] if movie.category_id in category_map else 'Movie' }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+

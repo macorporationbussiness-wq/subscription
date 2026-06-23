@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Subscription Plans{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .plan-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary-color);
+        box-shadow: 0 20px 40px rgba(229, 9, 20, 0.2);
+    }
+
+    .plan-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .plan-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fff;
+        margin: 0;
+    }
+
+    .plan-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .status-inactive {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+    }
+
+    .plan-price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #e50914;
+        margin-bottom: 0.5rem;
+    }
+
+    .plan-discount {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: line-through;
+        margin-left: 0.5rem;
+    }
+
+    .plan-duration {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .plan-features {
+        margin-bottom: 1.5rem;
+    }
+
+    .plan-features ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .plan-features li {
+        padding: 0.25rem 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+    }
+
+    .plan-features li:before {
+        content: "✓";
+        color: #e50914;
+        margin-right: 0.5rem;
+    }
+
+    .plan-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .add-plan-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .add-plan-card:hover {
+        border-color: var(--primary-color);
+        background: rgba(229, 9, 20, 0.05);
+    }
+
+    .add-plan-card svg {
+        width: 48px;
+        height: 48px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 1rem;
+    }
+
+    .add-plan-card h3 {
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .plans-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .plan-header {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .plan-actions {
+            justify-content: center;
+        }
+    }
+</style>
+
+<section class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>📋 Subscription Plans</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Manage subscription plans and pricing</p>
+        </div>
+        <a href="{{ url_for('admin_add_subscription') }}" class="btn btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Plan
+        </a>
+    </div>
+
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item">
+            <span>📊</span> Dashboard
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="admin-nav-item">
+            <span>👥</span> Users
+        </a>
+        <a href="{{ url_for('admin_movies') }}" class="admin-nav-item">
+            <span>🎬</span> Movies
+        </a>
+        <a href="{{ url_for('admin_payments') }}" class="admin-nav-item">
+            <span>💳</span> Payments
+        </a>
+        <a href="{{ url_for('admin_subscriptions') }}" class="admin-nav-item active">
+            <span>📋</span> Subscriptions
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages" style="margin-bottom: 2rem;">
+                {% for message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="plans-grid">
+        {% for plan in plans %}
+        <div class="plan-card">
+            <div class="plan-header">
+                <h3 class="plan-title">{{ plan.name }}</h3>
+                <span class="plan-status {{ 'status-active' if plan.is_active else 'status-inactive' }}">
+                    {{ 'Active' if plan.is_active else 'Inactive' }}
+                </span>
+            </div>
+
+            <div class="plan-price">
+                Rs. {{ plan.price_pkr }}
+                {% if plan.discount_percentage > 0 %}
+                    <span class="plan-discount">Rs. {{ (plan.price_pkr * (1 + plan.discount_percentage / 100)) | round(0) }}</span>
+                {% endif %}
+            </div>
+
+            <div class="plan-duration">
+                Duration: {{ plan.duration_text }}
+                {% if plan.discount_percentage > 0 %}
+                    <span style="color: #4CAF50; margin-left: 0.5rem;">{{ plan.discount_percentage }}% OFF</span>
+                {% endif %}
+            </div>
+
+            <div class="plan-features">
+                <ul>
+                    {% for feature in plan.features.split(',') %}
+                    <li>{{ feature.strip() }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="plan-actions">
+                <a href="{{ url_for('admin_edit_subscription', plan_id=plan.id) }}" class="btn btn-secondary btn-small">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Edit
+                </a>
+                <a href="{{ url_for('admin_delete_subscription', plan_id=plan.id) }}" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to delete this plan?')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Delete
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="plan-card add-plan-card" onclick="window.location.href='{{ url_for('admin_add_subscription') }}'">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h3>Add New Plan</h3>
+        </div>
+    </div>
+</section>
+
+<style>
+.flash-messages {
+    margin-bottom: 2rem;
+}
+
+.flash-message {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    color: #4CAF50;
+    margin-bottom: 0.5rem;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    border: none;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #d32f2f, #b71c1c);
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+

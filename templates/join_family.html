@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Join Family Group{% endblock %}
+{% block content %}
+
+<style>
+    .join-section {
+        padding: 4rem 2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .join-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .join-icon {
+        font-size: 4rem;
+        color: #e50914;
+        margin-bottom: 1rem;
+    }
+
+    .join-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #fff;
+    }
+
+    .join-description {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .code-input-group {
+        margin: 2rem 0;
+    }
+
+    .code-input {
+        width: 100%;
+        padding: 1.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+        font-size: 1.5rem;
+        text-align: center;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+    }
+
+    .code-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .join-btn {
+        background: #e50914;
+        color: #fff;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .join-btn:hover {
+        background: #f40612;
+        transform: translateY(-2px);
+    }
+
+    .join-btn:disabled {
+        background: rgba(255, 255, 255, 0.2);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .help-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 2rem;
+        color: #e50914;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .join-section {
+            padding: 2rem 1rem;
+        }
+
+        .join-card {
+            padding: 2rem;
+        }
+
+        .join-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<section class="join-section">
+    <div class="join-card">
+        <div class="join-icon">👨‍👩‍👧‍👦</div>
+        <h1 class="join-title">Join Family Group</h1>
+        <p class="join-description">
+            Enter the family code shared by the subscription owner to join their group and get access to the subscription.
+        </p>
+
+        <form method="POST" id="join-form">
+            <div class="code-input-group">
+                <input type="text" id="code" name="code" class="code-input" placeholder="ENTER CODE" maxlength="8" value="{{ prefilled_code or '' }}" required autocomplete="off">
+            </div>
+
+            <button type="submit" class="join-btn" id="join-btn">
+                Join Family Group
+            </button>
+        </form>
+
+        <p class="help-text">
+            Make sure to enter the code exactly as shown, including any letters and numbers.
+        </p>
+
+        <a href="{{ url_for('index') }}" class="back-link">← Back to Home</a>
+    </div>
+</section>
+
+<script>
+document.getElementById('code').addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+});
+
+document.getElementById('join-form').addEventListener('submit', function(e) {
+    const code = document.getElementById('code').value.trim();
+    if (code.length < 4) {
+        e.preventDefault();
+        alert('Please enter a valid family code.');
+        return;
+    }
+
+    const btn = document.getElementById('join-btn');
+    btn.disabled = true;
+    btn.textContent = 'Joining...';
+});
+</script>
+
+{% endblock %}
+

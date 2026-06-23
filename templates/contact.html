@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Contact Us - StreamFlix{% endblock %}
+{% block content %}
+<section class="hero-fullscreen">
+    <div class="hero-bg" style="background-image: url('https://image.tmdb.org/t/p/original/ww7hJHwjY9icW7MSZz2dnQ88wD1.jpg');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <span class="eyebrow">Support center</span>
+        <div class="hero-headline">
+            <h1>We're here to help with your streaming experience.</h1>
+            <p>Get instant answers to common questions or reach out to our premium support team for personalized assistance.</p>
+        </div>
+        <div class="hero-status-cards">
+            <div class="hero-stat">
+                <span>24/7</span>
+                <p>Support available</p>
+            </div>
+            <div class="hero-stat">
+                <span>5 min</span>
+                <p>Average response</p>
+            </div>
+            <div class="hero-stat">
+                <span>Free</span>
+                <p>All plans included</p>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="#contact-form" class="btn btn-primary">Contact Support</a>
+            <a href="{{ url_for('about') }}" class="btn btn-secondary">Learn More</a>
+        </div>
+    </div>
+</section>
+
+<section class="section section-glass contact-section">
+    <div class="contact-grid">
+        <div class="contact-panel">
+            <h2>Get in touch</h2>
+            <p>Have a question about your plan, account, or streaming experience? Send us a message and we'll get back to you within 24 hours.</p>
+            <div class="contact-meta">
+                {% if contact_info %}
+                    {% for contact in contact_info %}
+                        <div>
+                            <strong>{{ contact.label }}</strong>
+                            <span>{{ contact.value }}</span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div><strong>Email</strong><span>support@streamflix.com</span></div>
+                    <div><strong>Phone</strong><span>+1 (800) 555-0199</span></div>
+                    <div><strong>Hours</strong><span>24/7 Available</span></div>
+                {% endif %}
+            </div>
+        </div>
+        <form id="contact-form" class="contact-form" method="POST">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <label>Name</label>
+            <input type="text" name="name" placeholder="Your full name" required>
+            <label>Email</label>
+            <input type="email" name="email" placeholder="your.email@example.com" required>
+            <label>Message</label>
+            <textarea name="message" rows="6" placeholder="How can we help you today?" required></textarea>
+            <button type="submit" class="btn btn-primary btn-full">Send Message</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+

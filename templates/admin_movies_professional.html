@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Movies{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-primary {
+        padding: 0.8rem 1.5rem;
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(229, 9, 20, 0.4);
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        overflow-x: auto;
+        margin-bottom: 2rem;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        opacity: 0;
+        animation: fadeInTable 0.5s ease forwards 0.2s;
+    }
+
+    @keyframes fadeInTable {
+        to {
+            opacity: 1;
+        }
+    }
+
+    .table th {
+        background: rgba(229, 9, 20, 0.1);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 700;
+        color: #fff;
+        border-bottom: 2px solid rgba(229, 9, 20, 0.3);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .table td {
+        padding: 1.2rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+    }
+
+    .table tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(229, 9, 20, 0.08);
+    }
+
+    .movie-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .movie-poster {
+        width: 40px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .movie-info h4 {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .movie-info p {
+        margin: 0.2rem 0 0 0;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 0.9rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-draft {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .badge-published {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4caf50;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .actions {
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    .action-btn {
+        padding: 0.6rem 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .action-btn-primary {
+        background: linear-gradient(135deg, #2196f3, #42a5f5);
+        color: #fff;
+    }
+
+    .action-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+    }
+
+    .action-btn-danger {
+        background: linear-gradient(135deg, #f44336, #ff5252);
+        color: #fff;
+    }
+
+    .action-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>🎬 Movie Management</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Add, edit, and manage your content library</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('add_movie') }}" class="btn-primary">+ Add Movie</a>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}" class="active">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}">💳 Payments</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <!-- Movies Table -->
+    <div class="table-container">
+        {% if movies %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Rating</th>
+                    <th>Views</th>
+                    <th>Status</th>
+                    <th>Added</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movie in movies %}
+                <tr>
+                    <td>
+                        <div class="movie-title">
+                            <img src="{{ movie.poster_url or url_for('static', filename='uploads/default-poster.jpg') }}" alt="{{ movie.title }}" class="movie-poster">
+                            <div class="movie-info">
+                                <h4>{{ movie.title }}</h4>
+                                <p>{{ movie.year or 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ movie.category or 'Uncategorized' }}</td>
+                    <td>
+                        {% if movie.rating %}
+                        <strong>⭐ {{ movie.rating }}/10</strong>
+                        {% else %}
+                        <span style="color: rgba(255,255,255,0.5);">No rating</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ movie.views or 0 }}</strong></td>
+                    <td><span class="badge badge-published">Published</span></td>
+                    <td>{{ movie.created_at.strftime('%d %b, %Y') if movie.created_at else 'N/A' }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="{{ url_for('edit_movie', movie_id=movie.id) }}" class="action-btn action-btn-primary">✏️ Edit</a>
+                            <a href="{{ url_for('delete_movie', movie_id=movie.id) }}" class="action-btn action-btn-danger" onclick="return confirm('Are you sure?')">🗑️ Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-message">
+            <h3>🎨 No Movies Found</h3>
+            <p>Start by adding your first movie to the library</p>
+            <a href="{{ url_for('add_movie') }}" class="btn-primary" style="margin-top: 1rem;">+ Add Movie</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+

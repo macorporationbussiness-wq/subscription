@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Payment Pending - StreamFlix{% endblock %}
+{% block content %}
+<section class="hero-fullscreen">
+    <div class="hero-bg" style="background: linear-gradient(135deg, #1a1a1a, #2d2d2d);"></div>
+    <div class="hero-overlay" style="background: rgba(0, 0, 0, 0.7);"></div>
+    <div class="hero-content" style="text-align: center;">
+        <div class="pending-icon">
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#e50914" stroke-width="2" fill="none"/>
+                <path d="M12 6v6l4 2" stroke="#e50914" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="hero-headline">
+            <h1>Payment Under Review</h1>
+            <p>Your payment is being reviewed by our admin team. You'll receive approval within 24 hours.</p>
+        </div>
+
+        {% if pending_payments %}
+        <div class="pending-payments">
+            <h2>Your Pending Requests</h2>
+            {% for payment in pending_payments %}
+            <div class="payment-card">
+                <div class="payment-header">
+                    <h3>{{ payment.plan_name }}</h3>
+                    <span class="payment-status pending">Pending Review</span>
+                </div>
+                <div class="payment-details">
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <strong>Rs. {{ payment.amount }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Duration:</span>
+                        <strong>{% if payment.duration_unit == 'lifetime' %}Lifetime{% else %}{{ payment.duration_value }} {{ payment.duration_unit }}{% if payment.duration_value > 1 %}s{% endif %}{% endif %}</strong>
+                    </div>
+                    {% if payment.discount_percentage > 0 %}
+                    <div class="detail-row">
+                        <span>Discount:</span>
+                        <strong>{{ payment.discount_percentage }}% OFF</strong>
+                    </div>
+                    {% endif %}
+                    <div class="detail-row">
+                        <span>Submitted:</span>
+                        <strong>{{ payment.created_at.strftime('%d %b, %Y %H:%M') if payment.created_at else 'N/A' }}</strong>
+                    </div>
+                </div>
+                <div class="payment-actions">
+                    <form method="POST" action="{{ url_for('cancel_payment', payment_id=payment.id) }}" onsubmit="return confirm('Are you sure you want to cancel this payment request?')">
+                        <button type="submit" class="btn btn-danger">Cancel Request</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="pending-details">
+            <div class="detail-card">
+                <h3>What happens next?</h3>
+                <ul>
+                    <li>Our team reviews your payment screenshot</li>
+                    <li>Verification usually takes 2-24 hours</li>
+                    <li>You'll receive an email notification</li>
+                    <li>Once approved, you'll get full access</li>
+                </ul>
+            </div>
+            <div class="detail-card">
+                <h3>Need help?</h3>
+                <p>If you have any questions about your payment, contact our support team.</p>
+                <a href="{{ url_for('contact') }}" class="btn btn-secondary">Contact Support</a>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="{{ url_for('check_status') }}" class="btn btn-primary">Check Status</a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Browse Movies</a>
+            <a href="{{ url_for('settings') }}" class="btn btn-secondary">Account Settings</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.pending-icon {
+    margin-bottom: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.pending-payments {
+    margin: 3rem 0;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.pending-payments h2 {
+    color: #fff;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.payment-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.payment-header h3 {
+    color: #e50914;
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.payment-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.payment-status.pending {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.payment-details {
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.detail-row strong {
+    color: #fff;
+}
+
+.payment-actions {
+    text-align: center;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.detail-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: left;
+}
+
+.detail-card h3 {
+    color: #e50914;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.detail-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.detail-card li {
+    padding: 0.5rem 0;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-card li:before {
+    content: "⏳";
+    color: #e50914;
+    margin-right: 0.5rem;
+}
+
+.detail-card p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1rem;
+}
+
+.hero-headline h1 {
+    color: #fff;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.hero-headline p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .pending-details {
+        grid-template-columns: 1fr;
+        margin: 2rem 0;
+    }
+
+    .hero-headline h1 {
+        font-size: 2rem;
+    }
+
+    .hero-headline p {
+        font-size: 1.1rem;
+    }
+}
+</style>
+
+<script>
+// Automatic status checking
+function checkPaymentStatus() {
+    console.log('Checking payment status...');
+    fetch('/check-status', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.status === 'approved' && data.redirect) {
+            console.log('Payment approved! Redirecting to:', data.redirect);
+            window.location.href = data.redirect;
+        } else if (data.status === 'not_logged_in' && data.redirect) {
+            console.log('Not logged in, redirecting to:', data.redirect);
+            window.location.href = data.redirect;
+        } else {
+            console.log('Payment still pending');
+        }
+    })
+    .catch(error => {
+        console.log('Status check failed:', error);
+    });
+}
+
+// Check status every 30 seconds
+setInterval(checkPaymentStatus, 30000);
+
+// Also check immediately when page loads (after a short delay)
+setTimeout(checkPaymentStatus, 2000);
+</script>
+{% endblock %}
+

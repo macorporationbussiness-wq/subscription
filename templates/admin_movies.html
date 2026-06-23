@@ -1,0 +1,610 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Movies{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2.8rem;
+        margin-bottom: 0.5rem;
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .section-header p {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .btn-primary {
+        padding: 1rem 2rem;
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 8px 25px rgba(229, 9, 20, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(229, 9, 20, 0.4);
+    }
+
+    .btn-secondary {
+        padding: 1rem 2rem;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.9rem 1.8rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .main-content {
+        display: grid;
+        gap: 2rem;
+    }
+
+    .form-container {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        backdrop-filter: blur(20px);
+    }
+
+    .form-container h2 {
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.8rem;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #fff;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(229, 9, 20, 0.5);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-group select option {
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #e50914;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: flex-end;
+    }
+
+    .sidebar {
+        position: sticky;
+        top: 2rem;
+        height: fit-content;
+    }
+
+    .stats-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        margin-bottom: 2rem;
+    }
+
+    .stats-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+
+    .stat-item .label {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.95rem;
+    }
+
+    .stat-item .value {
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+
+    .movie-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(20px);
+    }
+
+    .movie-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(229, 9, 20, 0.3);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .movie-poster {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+        display: block;
+    }
+
+    .movie-content {
+        padding: 1.5rem;
+    }
+
+    .movie-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #fff;
+        line-height: 1.3;
+    }
+
+    .movie-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .movie-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: #ffd700;
+        font-weight: 600;
+    }
+
+    .movie-category {
+        background: rgba(229, 9, 20, 0.15);
+        color: #ff6b6b;
+        padding: 0.3rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .movie-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .movie-actions a {
+        flex: 1;
+        padding: 0.8rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #2196f3, #42a5f5);
+        color: #fff;
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #f44336, #ff5252);
+        color: #fff;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+        grid-column: 1 / -1;
+    }
+
+    .empty-state h3 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #fff;
+    }
+
+    .empty-state p {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .admin-section {
+            padding: 1rem;
+        }
+
+        .section-header h1 {
+            font-size: 2.2rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .movies-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .movie-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>🎬 Movie Management</h1>
+            <p>Professional content management system</p>
+        </div>
+        <div class="header-actions">
+            <button onclick="toggleForm()" class="btn-primary">+ Add New Movie</button>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}" class="active">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}">💳 Payments</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <div class="content-grid">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Add Movie Form (Hidden by default) -->
+            <div class="form-container" id="addMovieForm" style="display: none;">
+                <h2>🎬 Add New Movie</h2>
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="title">Movie Title *</label>
+                            <input type="text" id="title" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category_id">Category *</label>
+                            <select id="category_id" name="category_id" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Banner Description</label>
+                            <textarea id="description" name="description" placeholder="Write a short teaser or description for the banner"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="rating">Rating (0-10)</label>
+                            <input type="number" id="rating" name="rating" min="0" max="10" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="trailer_url">Trailer URL</label>
+                            <input type="url" id="trailer_url" name="trailer_url" placeholder="https://youtube.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label for="cast">Cast (comma separated)</label>
+                            <input type="text" id="cast" name="cast" placeholder="Actor 1, Actor 2, ...">
+                        </div>
+                        <div class="form-group">
+                            <label for="video_file">Video File</label>
+                            <input type="file" id="video_file" name="video_file" accept="video/*">
+                        </div>
+                        <div class="form-group">
+                            <label for="video_url">Or Video URL</label>
+                            <input type="url" id="video_url" name="video_url" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="thumbnail">Thumbnail</label>
+                            <input type="file" id="thumbnail" name="thumbnail" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label for="banner_image">Banner Image (1920x1080 or 2560x1440)</label>
+                            <input type="file" id="banner_image" name="banner_image" accept="image/*">
+                        </div>
+                        <div class="form-group form-grid-full">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show_in_banner" name="show_in_banner" value="1">
+                                <span>Show in Homepage Banner</span>
+                            </label>
+                        </div>
+                        <div class="form-group form-grid-full">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="featured" name="featured" value="1">
+                                <span>Legacy featured flag (kept for compatibility)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="toggleForm()" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Movie</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Movies Grid -->
+            {% if movies %}
+            <div class="movies-grid">
+                {% for movie in movies %}
+                <div class="movie-card">
+                    <img src="{{ url_for('uploaded_file', filename=movie.thumbnail.split('/')[-1]) if movie.thumbnail else url_for('static', filename='uploads/default-poster.jpg') }}" alt="{{ movie.title }}" class="movie-poster">
+                    <div class="movie-content">
+                        <h3 class="movie-title">{{ movie.title }}</h3>
+                        <div class="movie-meta">
+                            <span class="movie-category">{{ category_map.get(movie.category_id, 'Uncategorized') }}</span>
+                            {% if movie.rating %}
+                            <span class="movie-rating">⭐ {{ movie.rating }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="movie-actions">
+                            <a href="{{ url_for('admin_edit_movie', movie_id=movie.id) }}" class="btn-edit">Edit</a>
+                            <a href="{{ url_for('admin_delete_movie', movie_id=movie.id) }}" class="btn-delete" onclick="return confirm('Are you sure you want to delete this movie?')">Delete</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <h3>🎨 No Movies Found</h3>
+                <p>Start building your content library by adding your first movie</p>
+                <button onclick="toggleForm()" class="btn-primary">+ Add Your First Movie</button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="stats-card">
+                <h3>📊 Library Stats</h3>
+                <div class="stat-item">
+                    <span class="label">Total Movies</span>
+                    <span class="value">{{ movies|length if movies else 0 }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Categories</span>
+                    <span class="value">{{ categories|length if categories else 0 }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Average Rating</span>
+                    <span class="value">
+                        {% if movies %}
+                            {% set total_rating = 0 %}
+                            {% set rated_count = 0 %}
+                            {% for movie in movies %}
+                                {% if movie.rating %}
+                                    {% set total_rating = total_rating + movie.rating %}
+                                    {% set rated_count = rated_count + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ "%.1f"|format(total_rating / rated_count) if rated_count > 0 else "N/A" }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <h3>🎯 Quick Actions</h3>
+                <div style="display: grid; gap: 1rem;">
+                    <a href="{{ url_for('admin_categories') }}" class="btn-secondary" style="text-align: center;">Manage Categories</a>
+                    <a href="{{ url_for('admin_users') }}" class="btn-secondary" style="text-align: center;">View Users</a>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary" style="text-align: center;">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleForm() {
+    const form = document.getElementById('addMovieForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    form.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+
+{% endblock %}
+

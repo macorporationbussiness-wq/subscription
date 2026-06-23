@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Admin - Payment Information{% endblock %}
+{% block content %}
+
+<style>
+    .admin-section {
+        padding: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .section-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+
+    .admin-nav {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-nav a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.3rem;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+        text-decoration: none;
+    }
+
+    .admin-nav a:hover,
+    .admin-nav a.active {
+        background: var(--gradient);
+        border-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+    }
+
+    .form-section,
+    .list-section {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .btn-submit {
+        background: var(--gradient);
+        color: #fff;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+
+    .payment-item {
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .payment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .payment-method {
+        font-weight: 600;
+        color: #e50914;
+        font-size: 1.1rem;
+    }
+
+    .payment-account {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.5rem;
+    }
+
+    .payment-details {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .payment-instructions {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 0.5rem;
+    }
+
+    .payment-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .btn-edit,
+    .btn-delete {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-edit {
+        background: rgba(33, 150, 243, 0.2);
+        color: #2196f3;
+    }
+
+    .btn-edit:hover {
+        background: rgba(33, 150, 243, 0.3);
+    }
+
+    .btn-delete {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+    }
+
+    .btn-delete:hover {
+        background: rgba(244, 67, 54, 0.3);
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .empty-message h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    @media (max-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="admin-section">
+    <div class="section-header">
+        <div>
+            <h1>💰 Payment Information Management</h1>
+            <p style="color: rgba(255,255,255,0.75); margin-top: 0.5rem;">Manage payment methods and account details</p>
+        </div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_users') }}">👥 Users</a>
+        <a href="{{ url_for('admin_movies') }}">🎬 Movies</a>
+        <a href="{{ url_for('admin_categories') }}">📁 Categories</a>
+        <a href="{{ url_for('admin_payments') }}">💳 Payments</a>
+        <a href="{{ url_for('admin_subscriptions') }}">📋 Subscriptions</a>
+        <a href="{{ url_for('admin_family_groups') }}">👨‍👩‍👧‍👦 Family Groups</a>
+        <a href="{{ url_for('admin_website_settings') }}">⚙️ Website Settings</a>
+        <a href="{{ url_for('admin_social_media') }}">📱 Social Media</a>
+        <a href="{{ url_for('admin_about_us') }}">ℹ️ About Us</a>
+        <a href="{{ url_for('admin_contact_info') }}">📞 Contact Info</a>
+        <a href="{{ url_for('admin_payment_info') }}" class="active">💰 Payment Info</a>
+        <a href="{{ url_for('index') }}">🏠 Home</a>
+    </div>
+
+    <div class="content-grid">
+        <!-- Add/Edit Form -->
+        <div class="form-section">
+            <h2 style="color: #e50914; margin-bottom: 1.5rem;">Add Payment Method</h2>
+            <form method="POST">
+                <input type="hidden" name="add_payment" value="1">
+                <div class="form-group">
+                    <label for="payment_method">Payment Method</label>
+                    <select id="payment_method" name="payment_method" required>
+                        <option value="JazzCash">JazzCash</option>
+                        <option value="EasyPaisa">EasyPaisa</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="account_title">Account Title</label>
+                    <input type="text" id="account_title" name="account_title" placeholder="Account holder name" required>
+                </div>
+                <div class="form-group">
+                    <label for="account_number">Account Number</label>
+                    <input type="text" id="account_number" name="account_number" placeholder="Account/Mobile number" required>
+                </div>
+                <div class="form-group">
+                    <label for="bank_name">Bank/Service Name</label>
+                    <input type="text" id="bank_name" name="bank_name" placeholder="JazzCash, HBL, etc." required>
+                </div>
+                <div class="form-group">
+                    <label for="branch_code">Branch Code (Optional)</label>
+                    <input type="text" id="branch_code" name="branch_code" placeholder="Branch code if applicable">
+                </div>
+                <div class="form-group">
+                    <label for="instructions">Payment Instructions</label>
+                    <textarea id="instructions" name="instructions" placeholder="Instructions for users on how to make payment" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="display_order">Display Order</label>
+                    <input type="number" id="display_order" name="display_order" value="0" min="0">
+                </div>
+                <button type="submit" class="btn-submit">➕ Add Payment Method</button>
+            </form>
+        </div>
+
+        <!-- Payment Methods List -->
+        <div class="list-section">
+            <h2 style="color: #e50914; margin-bottom: 1.5rem;">Current Payment Methods</h2>
+            {% if payments %}
+                {% for payment in payments %}
+                <div class="payment-item">
+                    <div class="payment-header">
+                        <div class="payment-method">{{ payment.payment_method }}</div>
+                    </div>
+                    <div class="payment-account">
+                        <strong>{{ payment.account_title }}</strong>
+                    </div>
+                    <div class="payment-details">
+                        Account: {{ payment.account_number }}<br>
+                        {% if payment.bank_name %}Bank/Service: {{ payment.bank_name }}{% endif %}
+                        {% if payment.branch_code %}<br>Branch Code: {{ payment.branch_code }}{% endif %}
+                    </div>
+                    {% if payment.instructions %}
+                    <div class="payment-instructions">
+                        {{ payment.instructions }}
+                    </div>
+                    {% endif %}
+                    <div class="payment-actions">
+                        <button class="btn-edit" onclick="editPayment({{ payment.id }}, '{{ payment.payment_method }}', '{{ payment.account_title }}', '{{ payment.account_number }}', '{{ payment.bank_name }}', '{{ payment.branch_code }}', `{{ payment.instructions }}`, {{ payment.display_order }})">✏️ Edit</button>
+                        <a href="{{ url_for('admin_delete_payment_info', payment_id=payment.id) }}" class="btn-delete" onclick="return confirm('Delete this payment method?')">🗑️ Delete</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-message">
+                    <h3>No Payment Methods</h3>
+                    <p>Add your first payment method using the form</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: rgba(30,30,30,0.95); padding: 2rem; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+        <h3 style="color: #e50914; margin-bottom: 1rem;">Edit Payment Method</h3>
+        <form method="POST">
+            <input type="hidden" name="update_payment" value="1">
+            <input type="hidden" id="edit_payment_id" name="payment_id">
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select id="edit_payment_method" name="payment_method" required>
+                    <option value="JazzCash">JazzCash</option>
+                    <option value="EasyPaisa">EasyPaisa</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Account Title</label>
+                <input type="text" id="edit_account_title" name="account_title" required>
+            </div>
+            <div class="form-group">
+                <label>Account Number</label>
+                <input type="text" id="edit_account_number" name="account_number" required>
+            </div>
+            <div class="form-group">
+                <label>Bank/Service Name</label>
+                <input type="text" id="edit_bank_name" name="bank_name" required>
+            </div>
+            <div class="form-group">
+                <label>Branch Code (Optional)</label>
+                <input type="text" id="edit_branch_code" name="branch_code">
+            </div>
+            <div class="form-group">
+                <label>Payment Instructions</label>
+                <textarea id="edit_instructions" name="instructions" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Display Order</label>
+                <input type="number" id="edit_display_order" name="display_order" min="0">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn-submit" style="flex: 1;">💾 Update</button>
+                <button type="button" onclick="closeEditModal()" style="flex: 1; background: #666;">❌ Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editPayment(id, method, title, number, bank, branch, instructions, order) {
+    document.getElementById('edit_payment_id').value = id;
+    document.getElementById('edit_payment_method').value = method;
+    document.getElementById('edit_account_title').value = title;
+    document.getElementById('edit_account_number').value = number;
+    document.getElementById('edit_bank_name').value = bank;
+    document.getElementById('edit_branch_code').value = branch || '';
+    document.getElementById('edit_instructions').value = instructions;
+    document.getElementById('edit_display_order').value = order;
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+</script>
+
+{% endblock %}
+

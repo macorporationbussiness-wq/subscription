@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - {{ movie.title }} - StreamFlix{% endblock %}
+{% block content %}
+<section class="movie-hero">
+    <div class="movie-hero-bg" style="background-image: url('{{ movie.thumbnail }}');"></div>
+    <div class="movie-hero-content">
+        <div class="hero-tag">{{ category.name if category else 'Feature' }}</div>
+        <h1>{{ movie.title }}</h1>
+        <p class="movie-meta">⭐ {{ movie.rating }}/10 • 2026 • 2h 12m • Premium</p>
+        <div class="hero-actions">
+            <a href="{{ url_for('watch', movie_id=movie.id) }}" class="btn btn-primary">▶ Play</a>
+            <a href="{{ url_for('watchlist') }}" class="btn btn-secondary">+ My List</a>
+            <button class="btn btn-ghost">Share</button>
+        </div>
+        <p class="hero-description">Experience cinematic storytelling with stunning visuals, gripping performances, and a premium streaming experience that brings Hollywood to your screen.</p>
+    </div>
+</section>
+
+<section class="section section-split">
+    <div class="content-block">
+        <h2>Watch Trailer</h2>
+        <div class="video-card">
+            <video controls poster="{{ movie.thumbnail }}">
+                <source src="{{ movie.video_url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+    <div class="content-block">
+        <div class="info-panel">
+            <h3>About this movie</h3>
+            <p>Step into a high-energy world of dramatic twists, premium action sequences, and unforgettable characters in this blockbuster hit.</p>
+            <div class="info-grid">
+                <div><strong>Genre</strong><span>{{ category.name if category else 'Action' }}</span></div>
+                <div><strong>Length</strong><span>2h 12m</span></div>
+                <div><strong>Release</strong><span>2026</span></div>
+                <div><strong>Rating</strong><span>⭐ {{ movie.rating }}/10</span></div>
+            </div>
+            <h4>Cast & Crew</h4>
+            <ul class="cast-list">
+                {% for actor in cast %}
+                <li>{{ actor }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div>
+            <span class="eyebrow">More like this</span>
+            <h2>Similar Movies</h2>
+        </div>
+        <a href="{{ url_for('movies_page') }}" class="link-text">Browse all</a>
+    </div>
+    <div class="carousel-row">
+        {% for similar in similar_movies %}
+        <article class="movie-card">
+            <a href="{{ url_for('movie_detail', movie_id=similar.id) }}">
+                <div class="movie-card-media">
+                    <img src="{{ similar.thumbnail }}" alt="{{ similar.title }}">
+                    <div class="movie-card-hover"><span>▶</span></div>
+                </div>
+            </a>
+            <div class="movie-card-copy">
+                <h3>{{ similar.title }}</h3>
+                <span>{{ similar.rating }}/10</span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+

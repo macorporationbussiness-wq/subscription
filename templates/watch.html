@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - {{ movie.title }} - Watch Now{% endblock %}
+{% block content %}
+
+<style>
+    .watch-page {
+        padding: 0;
+    }
+
+    .video-player-full {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        border-radius: 0;
+        overflow: hidden;
+    }
+
+    .video-player-full video {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .movie-info-wrapper {
+        width: min(1200px, calc(100% - 3rem));
+        margin: 2rem auto 0;
+    }
+
+    .movie-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .movie-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .movie-title {
+        font-size: clamp(2.4rem, 6vw, 3.8rem);
+        line-height: 1.1;
+        margin: 0;
+        font-weight: 900;
+    }
+
+    .rating-badges {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .badge {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.75rem 1rem;
+        background: rgba(229, 9, 20, 0.1);
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        border-radius: 12px;
+    }
+
+    .badge-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .badge-value {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .movie-synopsis {
+        color: rgba(255, 255, 255, 0.82);
+        line-height: 1.85;
+        font-size: 1.05rem;
+    }
+
+    .watch-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .video-controls {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.8));
+        padding: 2rem 1.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .video-player-full:hover .video-controls {
+        opacity: 1;
+    }
+
+    .video-controls button {
+        background: rgba(229, 9, 20, 0.8);
+        border: none;
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        transition: background 0.2s ease;
+    }
+
+    .video-controls button:hover {
+        background: #e50914;
+    }
+
+    .progress-bar {
+        flex: 1;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: #e50914;
+        border-radius: 3px;
+        position: relative;
+    }
+
+    .progress-bar-fill::after {
+        content: '';
+        position: absolute;
+        right: -6px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 12px;
+        height: 12px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(229, 9, 20, 0.6);
+    }
+
+    .video-time {
+        color: #fff;
+        font-size: 0.9rem;
+        min-width: 100px;
+        text-align: right;
+    }
+
+    .volume-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .volume-slider {
+        width: 80px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        cursor: pointer;
+    }
+
+    .info-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 1.75rem;
+        backdrop-filter: blur(22px);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        height: fit-content;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .rating-showcase {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .big-rating {
+        font-size: 4.5rem;
+        font-weight: 900;
+        color: #e50914;
+        line-height: 0.9;
+        margin-bottom: 0.5rem;
+    }
+
+    .rating-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .info-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .features-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 1rem 0;
+    }
+
+    .feature-item {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+    }
+
+    .feature-icon {
+        color: #e50914;
+        font-weight: 600;
+    }
+
+    @media (max-width: 1024px) {
+        .movie-details-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .rating-badges {
+            flex-wrap: wrap;
+        }
+        
+        .watch-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="watch-page">
+    <!-- Full-width Video Player -->
+    <div class="video-player-full">
+        {% if video_info.type == 'youtube' %}
+            <!-- YouTube Iframe Player -->
+            <iframe
+                id="youtube-player"
+                width="100%"
+                height="100%"
+                src="{{ video_info.embed_url }}"
+                title="{{ movie.title }}"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                style="border: 0; display: block; width: 100%; height: 100%;">
+            </iframe>
+        {% elif video_info.type == 'hls' %}
+            <!-- HLS Video Player -->
+            <video 
+                id="hls-player"
+                width="100%"
+                height="100%"
+                style="width: 100%; height: 100%;"
+            >
+                <source src="{{ video_info.url }}" type="application/x-mpegURL">
+                Your browser does not support HLS streaming.
+            </video>
+        {% else %}
+            <!-- Standard HTML5 Video Player with Custom Controls -->
+            <video 
+                id="video-player"
+                width="100%"
+                height="100%"
+                style="width: 100%; height: 100%;"
+            >
+                <source src="{{ video_info.url }}" type="video/mp4">
+                <source src="{{ video_info.url }}" type="video/webm">
+                Your browser does not support the video tag.
+            </video>
+            <!-- Custom Controls -->
+            <div class="video-controls">
+                <button id="play-btn" title="Play">▶</button>
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="video-time">
+                    <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+                </div>
+                <div class="volume-control">
+                    <button id="volume-btn" title="Mute">🔊</button>
+                    <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="100">
+                </div>
+                <button id="fullscreen-btn" title="Fullscreen">⛶</button>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Movie Information Section -->
+    <div class="movie-info-wrapper">
+        <div class="movie-details-grid">
+            <!-- Main Content -->
+            <div class="movie-info">
+                <h1 class="movie-title">{{ movie.title }}</h1>
+                
+                <div class="rating-badges">
+                    <div class="badge">
+                        <span class="badge-label">Rating</span>
+                        <span class="badge-value">⭐ {{ "%.1f" | format(movie.rating if movie.rating else 8.2) }}</span>
+                    </div>
+                    <div class="badge">
+                        <span class="badge-label">Genre</span>
+                        <span class="badge-value">Premium</span>
+                    </div>
+                    <div class="badge">
+                        <span class="badge-label">Quality</span>
+                        <span class="badge-value">4K</span>
+                    </div>
+                    <div class="badge">
+                        <span class="badge-label">Year</span>
+                        <span class="badge-value">2024</span>
+                    </div>
+                </div>
+
+                <p class="movie-synopsis">
+                    Dive into an extraordinary cinematic experience with premium HD quality, immersive sound design, and engaging storytelling. This content is optimized for the best viewing experience on all your devices. Enjoy uninterrupted entertainment with no ads.
+                </p>
+
+                <div class="watch-actions">
+                    <a href="{{ url_for('add_to_watchlist', movie_id=movie.id) }}" class="btn btn-secondary">
+                        ➕ Add to Watchlist
+                    </a>
+                    <a href="{{ url_for('movies_page') }}" class="btn btn-ghost">
+                        ← Back to Movies
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-ghost">
+                        🏠 Home
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sidebar Card -->
+            <div class="info-card">
+                <div class="rating-showcase">
+                    <div class="big-rating">{{ "%.1f" | format(movie.rating if movie.rating else 8.2) }}</div>
+                    <div class="rating-label">Audience Rating</div>
+                </div>
+
+                <div class="info-divider"></div>
+
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Premium Quality</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Ad-free Watching</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Full HD Resolution</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Multi-device Access</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Custom Video Player Controls
+document.addEventListener('DOMContentLoaded', function() {
+    const videoPlayer = document.getElementById('video-player');
+    if (!videoPlayer) return; // YouTube/HLS players use native controls
+
+    const playBtn = document.getElementById('play-btn');
+    const volumeBtn = document.getElementById('volume-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const progressFill = document.getElementById('progress-fill');
+    const currentTimeSpan = document.getElementById('current-time');
+    const durationSpan = document.getElementById('duration');
+
+    // Format time helper
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Play/Pause
+    playBtn.addEventListener('click', () => {
+        if (videoPlayer.paused) {
+            videoPlayer.play();
+            playBtn.textContent = '⏸';
+        } else {
+            videoPlayer.pause();
+            playBtn.textContent = '▶';
+        }
+    });
+
+    videoPlayer.addEventListener('play', () => {
+        playBtn.textContent = '⏸';
+    });
+
+    videoPlayer.addEventListener('pause', () => {
+        playBtn.textContent = '▶';
+    });
+
+    // Volume Control
+    volumeSlider.addEventListener('input', (e) => {
+        videoPlayer.volume = e.target.value / 100;
+        updateVolumeIcon();
+    });
+
+    volumeBtn.addEventListener('click', () => {
+        if (videoPlayer.volume > 0) {
+            videoPlayer.volume = 0;
+            volumeSlider.value = 0;
+        } else {
+            videoPlayer.volume = 0.7;
+            volumeSlider.value = 70;
+        }
+        updateVolumeIcon();
+    });
+
+    function updateVolumeIcon() {
+        const volume = videoPlayer.volume;
+        if (volume === 0) {
+            volumeBtn.textContent = '🔇';
+        } else if (volume < 0.5) {
+            volumeBtn.textContent = '🔈';
+        } else {
+            volumeBtn.textContent = '🔊';
+        }
+    }
+
+    // Progress Bar
+    progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        videoPlayer.currentTime = percent * videoPlayer.duration;
+    });
+
+    videoPlayer.addEventListener('timeupdate', () => {
+        const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+        progressFill.style.width = percent + '%';
+        currentTimeSpan.textContent = formatTime(videoPlayer.currentTime);
+    });
+
+    videoPlayer.addEventListener('loadedmetadata', () => {
+        durationSpan.textContent = formatTime(videoPlayer.duration);
+    });
+
+    // Fullscreen
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.querySelector('.video-player-full').requestFullscreen();
+            fullscreenBtn.textContent = '⛶';
+        } else {
+            document.exitFullscreen();
+            fullscreenBtn.textContent = '⛶';
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target === document.body) {
+            e.preventDefault();
+            videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
+        }
+        if (e.code === 'KeyF') {
+            document.querySelector('.video-player-full').requestFullscreen();
+        }
+        if (e.code === 'KeyM') {
+            volumeBtn.click();
+        }
+    });
+});
+</script>
+
+{% endblock %}
+

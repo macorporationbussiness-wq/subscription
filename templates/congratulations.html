@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}{{ website_settings.site_name }} - Congratulations - StreamFlix{% endblock %}
+{% block content %}
+<section class="hero-fullscreen">
+    <div class="hero-bg" style="background: linear-gradient(135deg, #0f0f0f, #1a1a1a);"></div>
+    <div class="hero-overlay" style="background: rgba(0, 0, 0, 0.8);"></div>
+    <div class="hero-content" style="text-align: center;">
+        <div class="success-icon">
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#4CAF50" stroke-width="2" fill="none"/>
+                <path d="M8 12l2 2 4-4" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="hero-headline">
+            <h1>Congratulations!</h1>
+            <p>Thank you for subscribing to StreamFlix Premium. Your payment has been approved!</p>
+            {% if subscription and subscription.is_family %}
+            <p style="color: rgba(255,255,255,0.9); margin-top: 0.75rem;">You are using a family plan shared by {{ subscription.owner_name }}.</p>
+            {% endif %}
+            {% if subscription %}
+            <div class="subscription-info">
+                <div class="subscription-badge">
+                    <h3>{{ subscription.plan }}</h3>
+                    <p>Started: {{ subscription.start_date.strftime('%d %b, %Y at %I:%M %p') if subscription.start_date else 'N/A' }}</p>
+                    <p>Expires: {{ subscription.end_date.strftime('%d %b, %Y at %I:%M %p') if subscription.end_date else 'N/A' }}</p>
+                    <p>Duration: {% if subscription.duration_unit == 'lifetime' %}Lifetime{% else %}{{ subscription.duration_value }} {{ subscription.duration_unit }}{% if subscription.duration_value > 1 %}s{% endif %}{% endif %}</p>
+                    {% if subscription.end_date %}
+                        {% set days_remaining = ((subscription.end_date - now).days) %}
+                        <p>Days remaining: {{ days_remaining }} day{{ 's' if days_remaining != 1 else '' }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="success-details">
+            <div class="detail-card">
+                <h3>🎉 Welcome to Premium!</h3>
+                <ul>
+                    <li>Unlimited access to all movies and shows</li>
+                    <li>HD and 4K streaming quality</li>
+                    <li>Download content for offline viewing</li>
+                    <li>Ad-free experience</li>
+                    <li>Multiple device support</li>
+                </ul>
+            </div>
+            <div class="detail-card">
+                <h3>🚀 Get Started</h3>
+                <p>Your premium subscription is now active. Start exploring our vast library of entertainment.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Start Watching</a>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="{{ url_for('movies_page') }}" class="btn btn-primary">Browse Movies</a>
+            <a href="{{ url_for('tv_shows') }}" class="btn btn-secondary">Explore TV Shows</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.success-icon {
+    margin-bottom: 2rem;
+    animation: checkmark 1s ease-in-out;
+}
+
+@keyframes checkmark {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(-90deg); opacity: 0.8; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.subscription-info {
+    margin: 2rem 0;
+}
+
+.subscription-badge {
+    background: var(--gradient);
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: inline-block;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(229, 9, 20, 0.3);
+}
+
+.subscription-badge h3 {
+    color: white;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.subscription-badge p {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+}
+
+.detail-card {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: left;
+    animation: slideUp 0.8s ease-out;
+}
+
+.detail-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.detail-card h3 {
+    color: #4CAF50;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.detail-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.detail-card li {
+    padding: 0.5rem 0;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.detail-card li:before {
+    content: "✓";
+    color: #4CAF50;
+    margin-right: 0.5rem;
+    font-weight: bold;
+}
+
+.detail-card p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.5rem;
+}
+
+.hero-headline h1 {
+    color: #4CAF50;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+}
+
+.hero-headline p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .success-details {
+        grid-template-columns: 1fr;
+        margin: 2rem 0;
+    }
+
+    .hero-headline h1 {
+        font-size: 2rem;
+    }
+
+    .hero-headline p {
+        font-size: 1.1rem;
+    }
+}
+</style>
+{% endblock %}
+
