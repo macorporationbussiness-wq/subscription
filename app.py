@@ -77,6 +77,13 @@ def inject_user():
     }
 
 # Initialize database
+def table_exists(conn, table_name):
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+        (table_name,)
+    ).fetchone() is not None
+
+
 def init_db():
     conn = get_db()
     with open('database.sql', 'r', encoding='utf-8') as f:
@@ -98,6 +105,10 @@ def ensure_movie_columns(conn=None):
     if conn is None:
         conn = get_db()
         owns_connection = True
+    if not table_exists(conn, 'movies'):
+        if owns_connection:
+            init_db()
+        return
     columns = [col['name'] for col in conn.execute('PRAGMA table_info(movies)').fetchall()]
     if 'banner_image' not in columns:
         conn.execute('ALTER TABLE movies ADD COLUMN banner_image TEXT')
@@ -148,6 +159,21 @@ def ensure_runtime_tables(conn):
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
         ''')
+
+
+def ensure_database_ready():
+    conn = get_db()
+    needs_init = not table_exists(conn, 'movies')
+    conn.close()
+
+    if needs_init:
+        init_db()
+    else:
+        conn = get_db()
+        ensure_movie_columns(conn)
+        ensure_runtime_tables(conn)
+        conn.commit()
+        conn.close()
 
 
 # Classes
@@ -2233,13 +2259,8 @@ def serve_upload(filename):
 
 
 
+ensure_database_ready()
+
+
 if __name__ == '__main__':
-    if not os.path.exists(DATABASE_PATH):
-        init_db()
-    else:
-        conn = get_db()
-        ensure_movie_columns(conn)
-        ensure_runtime_tables(conn)
-        conn.commit()
-        conn.close()
     app.run(debug=True)
