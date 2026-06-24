@@ -39,7 +39,9 @@ def save_uploaded_files(files):
     return saved_files
 
 # Database connection
-DATABASE_PATH = os.environ.get('DATABASE_PATH', 'database.db')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_PATH = os.environ.get('DATABASE_PATH', os.path.join(BASE_DIR, 'database.db'))
+SCHEMA_PATH = os.environ.get('SCHEMA_PATH', os.path.join(BASE_DIR, 'database.sql'))
 
 
 def get_db():
@@ -86,7 +88,7 @@ def table_exists(conn, table_name):
 
 def init_db():
     conn = get_db()
-    with open('database.sql', 'r', encoding='utf-8') as f:
+    with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
         conn.executescript(f.read())
     ensure_movie_columns(conn)
     ensure_runtime_tables(conn)
