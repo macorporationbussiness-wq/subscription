@@ -11,11 +11,14 @@ Script to delete all movies from the database while preserving:
 - About us content
 """
 
+import os
 import sqlite3
+
+DB_PATH = os.environ.get('DATABASE_PATH', 'database.db')
 
 def delete_all_movies():
     try:
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
         print("Deleting all movies from database...")

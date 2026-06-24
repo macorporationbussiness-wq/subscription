@@ -30,15 +30,6 @@ CREATE TABLE IF NOT EXISTS movies (
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
--- Add new columns if they don't exist
-ALTER TABLE movies ADD COLUMN trailer_url TEXT;
-ALTER TABLE movies ADD COLUMN cast TEXT;
-ALTER TABLE movies ADD COLUMN screenshots TEXT;
-ALTER TABLE movies ADD COLUMN rating REAL DEFAULT 0.0;
-ALTER TABLE movies ADD COLUMN banner_image TEXT;
-ALTER TABLE movies ADD COLUMN description TEXT;
-ALTER TABLE movies ADD COLUMN show_in_banner INTEGER DEFAULT 0;
-
 CREATE TABLE IF NOT EXISTS watchlist (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -87,8 +78,11 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     duration_months INTEGER NOT NULL,
+    duration_unit TEXT DEFAULT 'month',
+    duration_value INTEGER DEFAULT 1,
     price_pkr REAL NOT NULL,
     discount_percentage REAL DEFAULT 0,
+    max_users INTEGER DEFAULT 1,
     features TEXT,
     is_active INTEGER DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -106,13 +100,13 @@ INSERT OR IGNORE INTO movies (title, category_id, thumbnail, video_url, rating) 
 ('Romance Movie 1', 5, 'static/uploads/thumbnail5.jpg', 'https://example.com/video5.mp4', 8.0);
 
 -- Insert default subscription plans
-INSERT OR IGNORE INTO subscription_plans (name, duration_months, price_pkr, discount_percentage, features, is_active) VALUES 
-('Basic Monthly', 1, 500, 0, 'HD Streaming, 1 Device, Ad-free', 1),
-('Standard Monthly', 1, 800, 0, 'Full HD Streaming, 2 Devices, Ad-free, Download Content', 1),
-('Premium Monthly', 1, 1200, 0, '4K Ultra HD, 4 Devices, Ad-free, Download Content, Offline Viewing', 1),
-('Basic Yearly', 12, 4500, 25, 'HD Streaming, 1 Device, Ad-free, 3 Months Free', 1),
-('Standard Yearly', 12, 7200, 25, 'Full HD Streaming, 2 Devices, Ad-free, Download Content, 3 Months Free', 1),
-('Premium Yearly', 12, 10800, 25, '4K Ultra HD, 4 Devices, Ad-free, Download Content, Offline Viewing, 3 Months Free', 1);
+INSERT OR IGNORE INTO subscription_plans (name, duration_months, duration_unit, duration_value, price_pkr, discount_percentage, max_users, features, is_active) VALUES
+('Basic Monthly', 1, 'month', 1, 500, 0, 1, 'HD Streaming, 1 Device, Ad-free', 1),
+('Standard Monthly', 1, 'month', 1, 800, 0, 2, 'Full HD Streaming, 2 Devices, Ad-free, Download Content', 1),
+('Premium Monthly', 1, 'month', 1, 1200, 0, 4, '4K Ultra HD, 4 Devices, Ad-free, Download Content, Offline Viewing', 1),
+('Basic Yearly', 12, 'year', 1, 4500, 25, 1, 'HD Streaming, 1 Device, Ad-free, 3 Months Free', 1),
+('Standard Yearly', 12, 'year', 1, 7200, 25, 2, 'Full HD Streaming, 2 Devices, Ad-free, Download Content, 3 Months Free', 1),
+('Premium Yearly', 12, 'year', 1, 10800, 25, 4, '4K Ultra HD, 4 Devices, Ad-free, Download Content, Offline Viewing, 3 Months Free', 1);
 
 -- Website Settings
 CREATE TABLE IF NOT EXISTS website_settings (
@@ -186,7 +180,7 @@ INSERT OR IGNORE INTO social_media (platform, url, icon_class, display_order) VA
 ('YouTube', 'https://youtube.com/streamflix', 'fab fa-youtube', 4);
 
 -- Insert default about us content
-INSERT OR IGNORE INTO about_us (title, content, mission, vision) VALUES 
+INSERT OR IGNORE INTO about_us (title, content, mission, vision, image_url) VALUES
 ('About StreamFlix', 'StreamFlix is your premier destination for streaming movies and TV shows online. We offer a vast library of content with high-quality streaming and an intuitive user interface.', 'To provide the best streaming experience with affordable pricing and excellent customer service.', 'To become the leading streaming platform globally, known for quality content and user satisfaction.', 'static/uploads/about-image.jpg');
 
 -- Insert default contact information

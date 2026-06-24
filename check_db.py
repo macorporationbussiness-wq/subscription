@@ -1,5 +1,8 @@
+import os
 import sqlite3
-conn = sqlite3.connect('database.db')
+
+DB_PATH = os.environ.get('DATABASE_PATH', 'database.db')
+conn = sqlite3.connect(DB_PATH)
 rows = conn.execute('SELECT id, title, banner_image, show_in_banner, featured FROM movies').fetchall()
 print('Movies:')
 for r in rows:

@@ -39,8 +39,11 @@ def save_uploaded_files(files):
     return saved_files
 
 # Database connection
+DATABASE_PATH = os.environ.get('DATABASE_PATH', 'database.db')
+
+
 def get_db():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -76,8 +79,10 @@ def inject_user():
 # Initialize database
 def init_db():
     conn = get_db()
-    with open('database.sql', 'r') as f:
+    with open('database.sql', 'r', encoding='utf-8') as f:
         conn.executescript(f.read())
+    ensure_movie_columns(conn)
+    ensure_runtime_tables(conn)
     # Create default admin user if not exists
     admin = conn.execute('SELECT * FROM users WHERE role = "admin"').fetchone()
     if not admin:
@@ -87,9 +92,12 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Ensure runtime movie schema is up to date
-def ensure_movie_columns():
-    conn = get_db()
+
+def ensure_movie_columns(conn=None):
+    owns_connection = False
+    if conn is None:
+        conn = get_db()
+        owns_connection = True
     columns = [col['name'] for col in conn.execute('PRAGMA table_info(movies)').fetchall()]
     if 'banner_image' not in columns:
         conn.execute('ALTER TABLE movies ADD COLUMN banner_image TEXT')
@@ -97,35 +105,13 @@ def ensure_movie_columns():
         conn.execute('ALTER TABLE movies ADD COLUMN description TEXT')
     if 'show_in_banner' not in columns:
         conn.execute('ALTER TABLE movies ADD COLUMN show_in_banner INTEGER DEFAULT 0')
+    if owns_connection:
+        conn.commit()
+        conn.close()
 
-    # Ensure subscription_plans table exists
+
+def ensure_runtime_tables(conn):
     tables = [table['name'] for table in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
-    if 'subscription_plans' not in tables:
-        conn.execute('''
-            CREATE TABLE subscription_plans (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                duration_months INTEGER NOT NULL,
-                duration_unit TEXT DEFAULT 'month',
-                duration_value INTEGER DEFAULT 1,
-                price_pkr REAL NOT NULL,
-                discount_percentage REAL DEFAULT 0,
-                max_users INTEGER DEFAULT 1,
-                features TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        # Insert default plans
-        conn.execute('''
-            INSERT INTO subscription_plans (name, duration_months, duration_unit, duration_value, price_pkr, discount_percentage, max_users, features, is_active) VALUES
-            ('Basic Monthly', 1, 'month', 1, 500, 0, 1, 'HD Streaming, 1 Device, Ad-free', 1),
-            ('Standard Monthly', 1, 'month', 1, 800, 0, 2, 'Full HD Streaming, 2 Devices, Ad-free, Download Content', 1),
-            ('Premium Monthly', 1, 'month', 1, 1200, 0, 4, '4K Ultra HD, 4 Devices, Ad-free, Download Content, Offline Viewing', 1),
-            ('Basic Yearly', 12, 'year', 1, 4500, 25, 1, 'HD Streaming, 1 Device, Ad-free, 3 Months Free', 1),
-            ('Standard Yearly', 12, 'year', 1, 7200, 25, 2, 'Full HD Streaming, 2 Devices, Ad-free, Download Content, 3 Months Free', 1),
-            ('Premium Yearly', 12, 'year', 1, 10800, 25, 4, '4K Ultra HD, 4 Devices, Ad-free, Download Content, Offline Viewing, 3 Months Free', 1)
-        ''')
 
     if 'subscription_plans' in tables:
         plan_columns = [col['name'] for col in conn.execute('PRAGMA table_info(subscription_plans)').fetchall()]
@@ -163,8 +149,6 @@ def ensure_movie_columns():
             )
         ''')
 
-    conn.commit()
-    conn.close()
 
 # Classes
 class User:
@@ -2250,8 +2234,12 @@ def serve_upload(filename):
 
 
 if __name__ == '__main__':
-    if not os.path.exists('database.db'):
+    if not os.path.exists(DATABASE_PATH):
         init_db()
     else:
-        ensure_movie_columns()
+        conn = get_db()
+        ensure_movie_columns(conn)
+        ensure_runtime_tables(conn)
+        conn.commit()
+        conn.close()
     app.run(debug=True)
